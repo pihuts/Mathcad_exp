@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Dict, Any, Optional
+import time
 from .dependencies import get_engine_manager
 from src.engine.manager import EngineManager
 from .schemas import JobSubmission, JobResponse, ControlResponse, BatchRequest, BatchStatus
@@ -55,3 +56,33 @@ async def get_batch_status(batch_id: str, manager: EngineManager = Depends(get_e
 async def stop_batch(batch_id: str, manager: EngineManager = Depends(get_engine_manager)):
     manager.batch_manager.stop_batch(batch_id)
     return ControlResponse(status="stopped", message=f"Batch {batch_id} stopping signal sent")
+
+@router.post("/engine/analyze")
+async def analyze_file(payload: Dict[str, Any], manager: EngineManager = Depends(get_engine_manager)):
+    if not manager.is_running():
+        raise HTTPException(status_code=503, detail="Engine is not running")
+    
+    path = payload.get("path")
+    if not path:
+        raise HTTPException(status_code=400, detail="Missing 'path' in payload")
+        
+    try:
+        # We'll use a blocking wait for this simple analysis
+        job_id = manager.submit_job("get_metadata", {"path": path})
+        
+        # Poll for result (max 10 seconds)
+        start_time = time.time()
+        while time.time() - start_time < 10:
+            result = manager.get_job(job_id)
+            if result:
+                if result.status == "success":
+                    return result.data
+                else:
+                    raise HTTPException(status_code=500, detail=result.error_message)
+            time.sleep(0.5)
+            
+        raise HTTPException(status_code=504, detail="Analysis timed out")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

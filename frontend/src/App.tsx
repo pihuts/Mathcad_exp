@@ -1,10 +1,18 @@
 import { AppShell, Title, Container, Button, Group, Stack } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
+import { useEffect } from 'react'
 import { BatchGrid } from './components/BatchGrid'
 import { InputModal } from './components/InputModal'
+import { getBatchStatus } from './services/api'
 
 function App() {
   const [opened, { open, close }] = useDisclosure(false)
+
+  useEffect(() => {
+    getBatchStatus('test-connection').catch(() => {
+        console.log("API Client initialized and reachable (expected 404 for test-connection)");
+    });
+  }, []);
 
   return (
     <AppShell
