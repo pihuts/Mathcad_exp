@@ -6,11 +6,11 @@
 ## Current Position
 
 **Phase:** 2.2 - Input Units Specification
-**Plan:** 2 of 5 in current phase
-**Status:** In progress
-**Last activity:** 2026-01-26 - Worker and harness units support for InputConfig array.
+**Plan:** 3 of 5 in current phase
+**Status:** Phase complete
+**Last activity:** 2026-01-26 - Batch manager builds InputConfig objects with units preservation.
 
-Progress: ████████████░░░ 71% (10/14 known plans complete)
+Progress: ███████████░░░░ 79% (11/14 known plans complete)
 
 | Phase | Goal | Status |
 |-------|------|--------|
@@ -37,6 +37,7 @@ Progress: ████████████░░░ 71% (10/14 known plans c
 - **Per-Alias Configuration:** Frontend UI now allows configuring each input alias individually via Range or CSV.
 - **MathcadPy Migration:** COMPLETED - Replaced fragile COM implementation with mature MathcadPy library. Uses file extension detection, automatic COM initialization, tuple unwrapping.
 - **InputConfig Dataclass:** Added to protocol.py for type-safe, units-aware input configuration. Uses Optional[str] for units with None default to preserve worksheet default behavior.
+- **Dual-Format Input Support:** Batch manager supports both new structured format ({"L": {"value": 10, "units": "ft"}}) and legacy simple dict ({"L": 10, "P": 5}) for gradual migration.
 
 ### Roadmap Evolution
 - Phase 2.1 inserted after Phase 2: MathcadPy Migration (COMPLETED) - Replaced fragile COM implementation with stable MathcadPy library
@@ -50,13 +51,13 @@ Progress: ████████████░░░ 71% (10/14 known plans c
 ## Session Continuity
 
 ### Last Session
-- Completed Phase 2.2 Plan 02: Worker and Harness Units Support.
-- Updated worker.set_input() to accept optional units parameter with type hint
-- Updated harness.calculate_job() to process InputConfig array instead of simple dict
-- Backward compatibility maintained for old dict-based input format
-- Units parameter correctly passed to MathcadPy's set_real_input()
+- Completed Phase 2.2 Plan 03: Batch Manager InputConfig Integration.
+- Updated batch_manager to import InputConfig and build InputConfig objects from row_input
+- Implemented dual-format support: new structured format with units and legacy simple dict format
+- Units field preserved when present in row_input, defaults to None for legacy compatibility
+- Harness already updated in plan 02.2-02 to process InputConfig array with units
 
 ### Next Steps
-1. **Next:** Phase 2.2 Plan 03 - (check plan file for details)
-2. Then: Remaining Phase 2.2 plans (04, 05)
+1. **Next:** Phase 2.2 Plan 04 - Frontend Units UI Integration
+2. Then: Phase 2.2 Plan 05 - E2E Testing with Units
 3. After Phase 2.2 complete: Phase 3 - Workflow Orchestration (multi-file chaining)
