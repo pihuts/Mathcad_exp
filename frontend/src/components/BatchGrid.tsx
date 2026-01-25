@@ -1,25 +1,58 @@
 import { AgGridReact } from 'ag-grid-react'
-import { useState } from 'react'
+import { useMemo } from 'react'
 import type { ColDef } from 'ag-grid-community'
+import { Badge } from '@mantine/core'
+import type { BatchRow } from '../services/api'
 
-export const BatchGrid = () => {
-  const [columnDefs] = useState<ColDef[]>([
-    { field: 'id', headerName: 'ID', width: 100 },
-    { field: 'input1', headerName: 'Input 1', flex: 1 },
-    { field: 'input2', headerName: 'Input 2', flex: 1 },
-    { field: 'status', headerName: 'Status', width: 150 },
-  ])
+interface BatchGridProps {
+  data: BatchRow[] | undefined;
+}
 
-  const [rowData] = useState([
-    { id: 1, input1: 'Value A', input2: 'Value B', status: 'Pending' },
-    { id: 2, input1: 'Value C', input2: 'Value D', status: 'Running' },
-  ])
+const StatusRenderer = (params: any) => {
+  const status = params.value;
+  let color = 'gray';
+  if (status === 'done') color = 'green';
+  if (status === 'running') color = 'blue';
+  if (status === 'error') color = 'red';
+  if (status === 'pending') color = 'yellow';
+  
+  return <Badge color={color} variant="filled">{status}</Badge>;
+}
+
+export const BatchGrid = ({ data }: BatchGridProps) => {
+  const columnDefs = useMemo<ColDef[]>(() => {
+    const baseCols: ColDef[] = [
+      { field: 'row', headerName: 'Row', width: 80, pinned: 'left' },
+      { field: 'status', headerName: 'Status', width: 120, cellRenderer: StatusRenderer, pinned: 'left' },
+    ];
+
+    if (data && data.length > 0) {
+      // Find first row that has data to extract columns
+      const firstWithData = data.find(r => r.data && Object.keys(r.data).length > 0);
+      if (firstWithData && firstWithData.data) {
+        const outputKeys = Object.keys(firstWithData.data);
+        outputKeys.forEach(key => {
+          baseCols.push({
+            headerName: key,
+            valueGetter: (params) => params.data.data ? params.data.data[key] : '',
+            flex: 1,
+            minWidth: 100
+          });
+        });
+      }
+    }
+
+    baseCols.push({ field: 'error', headerName: 'Error', flex: 2, minWidth: 200 });
+
+    return baseCols;
+  }, [data]);
 
   return (
-    <div className="ag-theme-alpine" style={{ height: 400, width: '100%' }}>
+    <div className="ag-theme-alpine" style={{ height: 600, width: '100%' }}>
       <AgGridReact
-        rowData={rowData}
+        rowData={data || []}
         columnDefs={columnDefs}
+        animateRows={true}
       />
     </div>
   )
