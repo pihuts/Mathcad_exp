@@ -6,9 +6,23 @@ import { useBatch } from './hooks/useBatch'
 
 function App() {
   const [opened, { open, close }] = useDisclosure(false)
-  const { batchData, currentBatchId, stopBatch } = useBatch()
+  const { startBatch, batchData, currentBatchId, stopBatch } = useBatch()
 
-  const progress = batchData ? (batchData.completed / batchData.total) * 100 : 0;
+  const progress = batchData ? (batchData.total > 0 ? (batchData.completed / batchData.total) * 100 : 0) : 0;
+
+  const handleRun = (config: { start: number, end: number, step: number, path: string, alias: string }) => {
+    const inputs = [];
+    // Generate simple range batch
+    for (let v = config.start; v <= config.end; v += config.step) {
+      inputs.push({ [config.alias]: v, "path": config.path });
+    }
+    
+    startBatch({
+      batch_id: `batch-${Date.now()}`,
+      inputs,
+      output_dir: "D:\\Mathcad_exp\\results"
+    });
+  }
 
   return (
     <AppShell
@@ -49,7 +63,7 @@ function App() {
         </Container>
       </AppShell.Main>
 
-      <InputModal opened={opened} onClose={close} />
+      <InputModal opened={opened} onClose={close} onRun={handleRun} />
     </AppShell>
   )
 }
