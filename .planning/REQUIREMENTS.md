@@ -100,11 +100,11 @@ Deferred to future release. Tracked but not in current roadmap.
 | OUT-04 | Phase 2 | Pending |
 | DIST-01 | Phase 5 | Pending |
 | DIST-02 | Phase 5 | Pending |
-| DIST-03 | Phase 1 | Pending |
+| DIST-03 | Phase 2 | Pending |
 
 **Coverage:**
-- v1 requirements: 25 total
-- Mapped to phases: 25
+- v1 requirements: 26 total
+- Mapped to phases: 26
 - Unmapped: 0 ✓
 
 ---
