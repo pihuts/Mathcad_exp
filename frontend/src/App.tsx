@@ -1,52 +1,59 @@
-import { AppShell, Title, Container, Button, Group, Stack, Progress, Text, TextInput, Table, Badge, ActionIcon } from '@mantine/core'
+import { AppShell, Title, Container, Button, Group, Stack, Progress, Text, TextInput, Table, Badge, ActionIcon, Alert } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { IconSettings, IconFolderOpen } from '@tabler/icons-react'
+import { IconSettings, IconAlertCircle } from '@tabler/icons-react'
 import { useState, useMemo } from 'react'
 import { BatchGrid } from './components/BatchGrid'
 import { InputModal } from './components/InputModal'
 import { useBatch } from './hooks/useBatch'
-import { getInputs, browseFile } from './services/api'
+import { getInputs } from './services/api'
 import { generateCartesian } from './utils/generators'
 
 function App() {
   const [opened, { open, close }] = useDisclosure(false)
-  const [filePath, setFilePath] = useState('D:\\Mathcad_exp\\test_files\\simple.mcdx')
+  const [filePath, setFilePath] = useState('')
   const [aliases, setAliases] = useState<{ alias: string, name: string }[]>([])
   const [aliasConfigs, setAliasConfigs] = useState<Record<string, any[]>>({})
+  const [aliasUnits, setAliasUnits] = useState<Record<string, string>>({})
   const [selectedAlias, setSelectedAlias] = useState<string | null>(null)
-  
+  const [error, setError] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
   const { startBatch, batchData, currentBatchId, stopBatch } = useBatch()
 
   const progress = batchData ? (batchData.total > 0 ? (batchData.completed / batchData.total) * 100 : 0) : 0;
 
   const handleAnalyze = async () => {
+    setError(null);
+    setIsAnalyzing(true);
     try {
       const meta = await getInputs(filePath);
       setAliases(meta.inputs);
       // Reset configs if aliases changed significantly or just keep them
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to analyze file", err);
+      // Try to extract useful message
+      const msg = err.response?.data?.detail || err.message || "Failed to analyze file";
+      setError(msg);
+    } finally {
+      setIsAnalyzing(false);
     }
   }
 
-  const handleBrowse = async () => {
-    try {
-      const { path } = await browseFile();
-      if (path) {
-        setFilePath(path);
-      }
-    } catch (err) {
-      console.error("Failed to browse file", err);
-    }
-  }
 
   const handleConfigureAlias = (alias: string) => {
     setSelectedAlias(alias);
     open();
   }
 
-  const handleSaveAliasConfig = (alias: string, values: any[]) => {
+  const handleSaveAliasConfig = (alias: string, config: any) => {
+    // Handle InputConfig object {alias, value, units} from InputModal
+    const values = Array.isArray(config) ? config : config.value;
+    const units = Array.isArray(config) ? undefined : config.units;
+
     setAliasConfigs(prev => ({ ...prev, [alias]: values }));
+    if (units) {
+      setAliasUnits(prev => ({ ...prev, [alias]: units }));
+    }
     close();
   }
 
@@ -57,16 +64,25 @@ function App() {
   }, [aliasConfigs]);
 
   const handleRun = () => {
-    // Check if all aliases have configs or use default? 
+    // Check if all aliases have configs or use default?
     // For now, only use configured ones.
     if (Object.keys(aliasConfigs).length === 0) return;
 
     const combinations = generateCartesian(aliasConfigs);
-    const inputs = combinations.map(combo => ({
-      ...combo,
-      path: filePath
-    }));
-    
+    const inputs = combinations.map(combo => {
+      // Add units to each input value
+      const inputWithUnits: Record<string, any> = { path: filePath };
+      for (const [key, value] of Object.entries(combo)) {
+        const units = aliasUnits[key];
+        if (units) {
+          inputWithUnits[key] = { value, units };
+        } else {
+          inputWithUnits[key] = value;
+        }
+      }
+      return inputWithUnits;
+    });
+
     startBatch({
       batch_id: `batch-${Date.now()}`,
       inputs,
@@ -91,20 +107,26 @@ function App() {
       <AppShell.Main>
         <Container size="xl">
           <Stack gap="xl">
+            {error && (
+              <Alert icon={<IconAlertCircle size={16} />} title="Error" color="red" withCloseButton onClose={() => setError(null)}>
+                {error}
+              </Alert>
+            )}
             <Group align="flex-end">
-              <TextInput 
+              <TextInput
                 label="Mathcad File Path"
                 placeholder="C:\path\to\file.mcdx"
                 value={filePath}
                 onChange={(e) => setFilePath(e.currentTarget.value)}
                 style={{ flex: 1 }}
-                rightSection={
-                  <ActionIcon variant="subtle" color="gray" onClick={handleBrowse}>
-                    <IconFolderOpen size={16} />
-                  </ActionIcon>
-                }
               />
-              <Button onClick={handleAnalyze}>Analyze File</Button>
+              <Button
+                onClick={handleAnalyze}
+                loading={isAnalyzing}
+                disabled={isAnalyzing || !filePath}
+              >
+                Analyze File
+              </Button>
             </Group>
 
             {aliases.length > 0 && (

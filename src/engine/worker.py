@@ -21,11 +21,24 @@ class MathcadWorker:
             raise Exception(f"Failed to connect to Mathcad: {str(e)}")
 
     def is_connected(self) -> bool:
-        return self.mc is not None
+        """Check if Mathcad connection is alive by testing COM accessibility."""
+        if not self.mc:
+            return False
+
+        try:
+            # Test COM connection by accessing a property that requires live connection
+            # Accessing Worksheets.Count will throw COM error if connection is dead
+            _ = self.mc.worksheet_names()
+            return True
+        except Exception:
+            # COM connection is dead
+            return False
 
     def open_file(self, path: str):
-        if not self.mc:
-            raise Exception("Mathcad not connected")
+        # Check if connection is alive, reconnect if necessary
+        if not self.is_connected():
+            print("Mathcad connection lost, reconnecting...")
+            self.connect()
 
         abs_path = Path(path).resolve()
         if not abs_path.exists():
