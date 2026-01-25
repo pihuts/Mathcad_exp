@@ -25,3 +25,10 @@ class JobResult:
     @property
     def is_success(self) -> bool:
         return self.status == "success"
+
+@dataclass
+class InputConfig:
+    """Configuration for a single input in a batch calculation"""
+    alias: str
+    value: Any
+    units: Optional[str] = None  # Units specification (e.g., "in", "ft", "kip", or None for default)
