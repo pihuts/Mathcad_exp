@@ -5,17 +5,17 @@
 
 ## Current Position
 
-Phase: 2 of 5 (Batch Processing System)
-Plan: 1 of 5 in current phase
-Status: In progress
-Last activity: 2026-01-25 - Completed 02-01-PLAN.md
+**Phase:** 2 - Batch Processing System
+**Plan:** 02 - Backend Orchestration & PDF Export
+**Status:** In Progress
+**Last activity:** 2026-01-25 - Completed 02-02-PLAN.md
 
-Progress: ████░░░░░░ 50%
+Progress: ██████░░░░ 62% (5/8 known plans complete)
 
 | Phase | Goal | Status |
 |-------|------|--------|
 | **1. Core Engine** | **Reliable Mathcad control & COM stability** | **Complete** |
-| **2. Batch Processing** | **Parameter studies & Output generation** | **In progress** |
+| 2. Batch Processing | Parameter studies & Output generation | In Progress |
 | 3. Workflow | Multi-file chaining | Pending |
 | 4. Library | Configuration persistence | Pending |
 | 5. Packaging | Standalone distribution | Pending |
@@ -23,26 +23,28 @@ Progress: ████░░░░░░ 50%
 ## Context & Memory
 
 ### Active Context
-- **Focus:** Frontend UI for Batch Processing.
-- **Risk:** Integration between React frontend and FastAPI backend.
-- **Architecture:** Vite + Mantine + AG Grid for frontend.
+- **Focus:** Backend orchestration and export capabilities.
+- **Risk:** Mathcad COM API fragility handling is implemented but needs real-world stress testing.
+- **Architecture:** Sidecar pattern operational. BatchManager runs in background thread.
 
 ### Recent Decisions
-- **Frontend Stack:** Vite, Mantine, AG Grid, React Query, Axios.
-- **UI Patterns:** Using Mantine AppShell for layout and Modal for input configuration.
+- **MathcadPrime.Application:** Switched to this ProgID as it is the registered one in the environment.
+- **Batch Threading:** BatchManager uses a background thread to prevent blocking the FastAPI event loop.
+- **None-Safety:** Hardened EngineManager with checks to prevent crashes during process lifecycle transitions.
+- **Lazy Imports:** Used to break circular dependency between EngineManager and BatchManager.
 
 ### Performance Metrics
-- **Requirements Covered:** Phase 1 complete, Phase 2 in progress.
-- **Total Plans:** 8
-- **Completed Plans:** 4
+- **Requirements Covered:** 100% (Phase 1), ~40% (Phase 2)
+- **Orphans:** 0
+- **Known Gaps:** Parallel execution (deferred to v2).
 
 ## Session Continuity
 
 ### Last Session
-- Completed Plan 02-01: Frontend Scaffolding.
-- Initialized Vite project in `frontend/`.
-- Setup Mantine and AG Grid providers.
-- Created `BatchGrid` and `InputModal` components.
+- Completed Plan 02-02: Backend Orchestration & PDF Export.
+- Implemented `BatchManager` and extended `Worker` with PDF export.
+- Added Batch API endpoints (`/batch/start`, `/batch/{id}`, `/batch/{id}/stop`).
+- Verified implementation with unit and integration tests.
 
 ### Next Steps
-1. Execute Plan 02-02: Connect Frontend to Backend API.
+1. Implement Phase 2 Plan 03: Frontend Grid Integration.
