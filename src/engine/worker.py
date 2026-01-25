@@ -80,8 +80,11 @@ class MathcadWorker:
                 # Pass units to MathcadPy's set_real_input
                 # Default to "" if not specified, preserving worksheet units
                 units_param = units if units is not None else ""
+                # Use preserve_worksheet_units=True only when units is empty/None
+                # Use preserve_worksheet_units=False when units are provided to allow conversion
+                preserve_units = (units is None or units == "")
                 error = self.worksheet.set_real_input(
-                    alias, float(value), units=units_param, preserve_worksheet_units=True
+                    alias, float(value), units=units_param, preserve_worksheet_units=preserve_units
                 )
                 if error != 0:
                     raise Exception(f"set_real_input returned error code {error}")
