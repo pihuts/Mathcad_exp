@@ -31,3 +31,49 @@ class MathcadWorker:
 
     def is_connected(self) -> bool:
         return self.mc is not None
+
+    def open_file(self, path: str):
+        if not self.mc:
+            raise Exception("Mathcad not connected")
+        
+        abs_path = os.path.abspath(path)
+        if not os.path.exists(abs_path):
+             raise FileNotFoundError(f"File not found: {abs_path}")
+             
+        try:
+            self.worksheet = self.mc.Open(abs_path)
+        except Exception as e:
+            raise Exception(f"Failed to open file {abs_path}: {str(e)}")
+
+    def get_inputs(self) -> List[Dict[str, Any]]:
+        if not self.worksheet:
+            raise Exception("No worksheet open")
+        
+        inputs = []
+        try:
+            # Mathcad Prime API: Worksheet.Inputs is a collection
+            for item in self.worksheet.Inputs:
+                inputs.append({
+                    "alias": item.Alias,
+                    "name": item.Name,
+                    "units": item.Units
+                })
+        except Exception as e:
+            raise Exception(f"Failed to retrieve inputs: {str(e)}")
+        return inputs
+
+    def get_outputs(self) -> List[Dict[str, Any]]:
+        if not self.worksheet:
+            raise Exception("No worksheet open")
+        
+        outputs = []
+        try:
+            for item in self.worksheet.Outputs:
+                 outputs.append({
+                    "alias": item.Alias,
+                    "name": item.Name,
+                    "units": item.Units
+                })
+        except Exception as e:
+             raise Exception(f"Failed to retrieve outputs: {str(e)}")
+        return outputs

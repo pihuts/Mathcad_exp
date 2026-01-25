@@ -64,6 +64,27 @@ def run_harness(input_queue: multiprocessing.Queue, output_queue: multiprocessin
                         status="success",
                         data={"message": "Connected to Mathcad"}
                     )
+                elif job.command == "load_file":
+                    path = job.payload.get("path")
+                    if not path:
+                         raise ValueError("Payload missing 'path'")
+                    worker.open_file(path)
+                    result = JobResult(
+                        job_id=job.id,
+                        status="success",
+                        data={"message": f"Opened {path}"}
+                    )
+                elif job.command == "get_metadata":
+                    inputs = worker.get_inputs()
+                    outputs = worker.get_outputs()
+                    result = JobResult(
+                        job_id=job.id,
+                        status="success",
+                        data={
+                            "inputs": inputs,
+                            "outputs": outputs
+                        }
+                    )
                 else:
                     result = JobResult(
                         job_id=job.id,
