@@ -6,11 +6,11 @@
 ## Current Position
 
 **Phase:** 2 - Batch Processing System
-**Plan:** 03 - Frontend Grid Integration
+**Plan:** 04 - Input Generation
 **Status:** In Progress
-**Last activity:** 2026-01-25 - Completed 02-03-PLAN.md
+**Last activity:** 2026-01-25 - Completed 02-04-PLAN.md
 
-Progress: ███████░░░ 75% (6/8 known plans complete)
+Progress: █████████░ 87% (7/8 known plans complete)
 
 | Phase | Goal | Status |
 |-------|------|--------|
@@ -32,18 +32,19 @@ Progress: ███████░░░ 75% (6/8 known plans complete)
 - **Batch Threading:** BatchManager uses a background thread to prevent blocking the FastAPI event loop.
 - **None-Safety:** Hardened EngineManager with checks to prevent crashes during process lifecycle transitions.
 - **Lazy Imports:** Used to break circular dependency between EngineManager and BatchManager.
+- **Per-Alias Configuration:** Frontend UI now allows configuring each input alias individually via Range or CSV.
 
 ### Performance Metrics
-- **Requirements Covered:** 100% (Phase 1), ~40% (Phase 2)
+- **Requirements Covered:** 100% (Phase 1), ~70% (Phase 2)
 - **Orphans:** 0
 - **Known Gaps:** Parallel execution (deferred to v2).
 
 ## Session Continuity
 
 ### Last Session
-- Completed Plan 02-03: Frontend Grid Integration.
-- Integrated React frontend with Backend Batch API using TanStack Query.
-- Implemented real-time progress updates and run/stop controls.
+- Completed Plan 02-04: Input Generation.
+- Implemented client-side CSV parsing and Range generation logic.
+- Enhanced InputModal and App UI to support multi-alias batch configuration.
 
 ### Next Steps
-1. Implement Phase 2 Plan 04: Library & Persistence.
+1. Implement Phase 2 Plan 05: Output Organization & Naming.
