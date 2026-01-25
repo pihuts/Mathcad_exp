@@ -1,33 +1,13 @@
 from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel
 from typing import Dict, Any, Optional
 from .dependencies import get_engine_manager
 from src.engine.manager import EngineManager
+from .schemas import JobSubmission, JobResponse, ControlResponse, BatchRequest, BatchStatus
 
 router = APIRouter()
 
-class JobSubmission(BaseModel):
-    command: str
-    payload: Dict[str, Any] = {}
-
-class JobResponse(BaseModel):
-    job_id: str
-    status: str = "submitted"
-
-class ControlResponse(BaseModel):
-    status: str
-    message: str
-
 @router.post("/jobs", response_model=JobResponse)
 async def submit_job(job: JobSubmission, manager: EngineManager = Depends(get_engine_manager)):
-    """
-    Submit a command to the engine.
-    Common commands:
-    - 'ping': {}
-    - 'open_file': {'path': '...'}
-    - 'set_input': {'variable': '...', 'value': ...}
-    - 'get_output': {'variable': '...'}
-    """
     if not manager.is_running():
         raise HTTPException(status_code=503, detail="Engine is not running")
     
@@ -41,11 +21,7 @@ async def submit_job(job: JobSubmission, manager: EngineManager = Depends(get_en
 async def get_job_result(job_id: str, manager: EngineManager = Depends(get_engine_manager)):
     result = manager.get_job(job_id)
     if not result:
-        # Since we don't track pending jobs explicitly (they are in the queue),
-        # 404 is appropriate for "result not found yet".
-        # A 202 Accepted could be better if we knew it was valid.
         raise HTTPException(status_code=404, detail="Job result not found or pending")
-    
     return result
 
 @router.post("/control/stop", response_model=ControlResponse)
@@ -57,3 +33,25 @@ async def stop_engine(manager: EngineManager = Depends(get_engine_manager)):
 async def restart_engine(manager: EngineManager = Depends(get_engine_manager)):
     manager.restart_engine()
     return ControlResponse(status="restarted", message="Engine restarted")
+
+# Batch Endpoints
+
+@router.post("/batch/start", response_model=ControlResponse)
+async def start_batch(req: BatchRequest, manager: EngineManager = Depends(get_engine_manager)):
+    if not manager.is_running():
+        raise HTTPException(status_code=503, detail="Engine is not running")
+    
+    manager.batch_manager.start_batch(req.batch_id, req.inputs, req.output_dir)
+    return ControlResponse(status="started", message=f"Batch {req.batch_id} initiated")
+
+@router.get("/batch/{batch_id}", response_model=BatchStatus)
+async def get_batch_status(batch_id: str, manager: EngineManager = Depends(get_engine_manager)):
+    status = manager.batch_manager.get_status(batch_id)
+    if not status:
+        raise HTTPException(status_code=404, detail=f"Batch {batch_id} not found")
+    return status
+
+@router.post("/batch/{batch_id}/stop", response_model=ControlResponse)
+async def stop_batch(batch_id: str, manager: EngineManager = Depends(get_engine_manager)):
+    manager.batch_manager.stop_batch(batch_id)
+    return ControlResponse(status="stopped", message=f"Batch {batch_id} stopping signal sent")
