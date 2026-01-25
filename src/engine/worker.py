@@ -7,8 +7,22 @@ class MathcadWorker:
     def __init__(self):
         self.mc = None
         self.worksheet = None
+        self.constants = {}
         # Initialize COM library for this thread - CRITICAL for multiprocess
         pythoncom.CoInitialize()
+
+    def discover_constants(self):
+        """
+        Inspects win32com.client.constants to find relevant enums.
+        """
+        try:
+            from win32com.client import gencache
+            gencache.EnsureDispatch("MathcadPrime.Application")
+            import win32com.client
+            for name in dir(win32com.client.constants):
+                self.constants[name] = getattr(win32com.client.constants, name)
+        except Exception:
+            pass
 
     def connect(self) -> bool:
         """
@@ -16,8 +30,8 @@ class MathcadWorker:
         Returns True if successful, raises exception otherwise.
         """
         try:
-            # mathcadpy research suggests "Mathcad.Application" is the ProgID
-            self.mc = win32com.client.Dispatch("Mathcad.Application")
+            # mathcadpy research suggests "MathcadPrime.Application" is the ProgID
+            self.mc = win32com.client.Dispatch("MathcadPrime.Application")
             if not self.mc:
                 raise Exception("Dispatch returned None for Mathcad.Application")
             
@@ -102,3 +116,29 @@ class MathcadWorker:
                 return self.worksheet.OutputGetStringValue(alias)
             except Exception as e:
                 raise Exception(f"Failed to get output {alias}: {str(e)}")
+
+    def save_as(self, path: str, format_enum: Optional[int] = None):
+        """
+        Saves the current worksheet in the specified format.
+        Defaults to PDF (3) if format_enum is not provided.
+        """
+        if not self.worksheet:
+            raise Exception("No worksheet open")
+        
+        abs_path = os.path.abspath(path)
+        
+        # If no format_enum provided, try to find one from discovered constants
+        if format_enum is None:
+            # Look for something like 'spFileFormatPDF' or similar
+            # If not found, fall back to 3 (common for PDF)
+            format_enum = 3
+            for name, value in self.constants.items():
+                if "PDF" in name.upper():
+                    format_enum = value
+                    break
+
+        try:
+            # Mathcad Prime API SaveAs(path, format)
+            self.worksheet.SaveAs(abs_path, format_enum)
+        except Exception as e:
+            raise Exception(f"Failed to save to {abs_path}: {str(e)}")
