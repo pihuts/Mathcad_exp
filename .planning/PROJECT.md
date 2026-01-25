@@ -1,12 +1,10 @@
-# MathcadPy Parametric Runner
+# Mathcad Automator
 
 ## What This Is
-
-A portable web application that automates parametric analysis using Mathcad. Users select a Mathcad file, the app scans for designated input variables, and users can assign values (single, ranges, CSV imports, or predefined lists) to run multiple combinations. Each combination saves as PDF and/or .mcdx with parameters in the filename. Built for non-technical users in connection engineering who need to run batch calculations without understanding Mathcad internals.
+A local, self-contained web application that automates Mathcad calculations. It allows engineers to batch process files with ranges of inputs (CSV or generated) and chain multiple Mathcad files together into workflows (Input A → File 1 → Output A → Input B → File 2). It is distributed as a single executable requiring no technical setup, targeting non-technical users who simply need to run calculations.
 
 ## Core Value
-
-Non-technical users can run parametric Mathcad calculations through a simple web interface without touching Mathcad directly.
+Enable non-technical engineers to perform complex parameter studies and multi-file workflows in Mathcad with zero programming or setup.
 
 ## Requirements
 
@@ -16,63 +14,33 @@ Non-technical users can run parametric Mathcad calculations through a simple web
 
 ### Active
 
-- [ ] User can browse and select a Mathcad file (.mcdx)
-- [ ] App scans and displays all designated input variables from the file
-- [ ] User can assign single values to inputs
-- [ ] User can assign a range of values to inputs
-- [ ] User can import values from CSV files
-- [ ] User can select from predefined lists (bolt diameters, plate thicknesses in 1/8" increments)
-- [ ] User can create and save custom input lists for reuse
-- [ ] User can generate all combinations of selected input values
-- [ ] App runs each combination through Mathcad via MathcadPy API
-- [ ] User can choose to save output as .mcdx file
-- [ ] User can choose to save output as PDF
-- [ ] Output filenames include parameter values (e.g., `template_bolt0.75_plate0.5.pdf`)
-- [ ] Progress bar shows completion during batch processing
-- [ ] App is portable (copy folder, run single file/script)
+- [ ] **Scan & Parse**: Automatically detect Input/Output aliases in selected Mathcad files using MathcadPy.
+- [ ] **Batch Processing**: Allow users to define ranges (Start/End/Increment) or upload CSVs for specific inputs.
+- [ ] **Library Management**: UI to save and reuse common input lists (e.g., "Bolt Diameters", "Structural Members").
+- [ ] **Workflow Engine**: Interface to chain files and explicitly map Output X from File A to Input Y of File B.
+- [ ] **Execution & Export**: Run calculations sequentially (showing progress) and save results as PDF and/or MCDX with custom naming (filename_parameter.extension).
+- [ ] **Zero-Config Distribution**: Package entire application (Python, dependencies, server) into a single `.exe` or clickable folder.
 
 ### Out of Scope
 
-- Multi-file workflow chaining — deferred to v2
-- Output-to-input mapping between files — deferred to v2
-- Saved workflow configurations — deferred to v2
-- Cloud deployment — local only
-- Mathcad installation/licensing — user must have Mathcad installed
+- **Cloud Execution**: Must run locally to access the user's licensed Mathcad installation.
+- **Parallel Processing**: Mathcad COM interface is single-threaded; files process one by one.
 
 ## Context
 
-**Technical Environment:**
-- Python backend (required for MathcadPy API)
-- MathcadPy library: https://github.com/MattWoodhead/MathcadPy
-- Requires Mathcad installed on user's machine (API dependency)
-- Web interface for local use
-- Target: 20-100 combinations per run
-
-**User Context:**
-- Primary users are non-technical staff in connection engineering
-- Engineers create the Mathcad templates with designated input variables
-- Non-technical users run the batch calculations
-- Users need to see the same variable names as in Mathcad (no translation)
-
-**Distribution:**
-- Must be portable — copy a folder, run a file
-- No installation steps for end users
-- Shared locally within offices/teams
+- **User Base**: Structural engineers who are "tech noobs." They cannot be expected to install Python, run pip commands, or configure environments.
+- **Environment**: Windows Desktop with Mathcad installed.
+- **Tech Stack**: Python (Backend), Web Frontend, MathcadPy (API), PyInstaller (Distribution).
 
 ## Constraints
 
-- **Tech Stack**: Python backend — required for MathcadPy integration
-- **Dependency**: Mathcad must be installed on the machine running the app
-- **Portability**: Must run from a single folder with minimal/no setup
-- **Users**: Interface must be simple enough for non-technical users
+- **Dependency**: Requires local Mathcad installation.
+- **Distribution**: Must be a standalone executable (no external Python requirements for end user).
+- **Concurrency**: Mathcad Automation API is single-threaded; app must handle queuing.
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Single file mode for v1 | Reduce complexity, validate core value first | — Pending |
-| Web interface over desktop GUI | Easier to share, familiar to users | — Pending |
-| Parameters in filename | Easy identification of outputs | — Pending |
-
----
-*Last updated: 2025-01-25 after initialization*
+| **Web-based Local App** | Allows rich UI for mapping workflows while keeping easy access to local file system. | — Pending |
+| **Explicit Mapping** | "Magic" name matching is too error-prone for engineering; users must manually connect outputs to inputs. | — Pending |
