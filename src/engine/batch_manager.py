@@ -3,7 +3,7 @@ import time
 import os
 from typing import List, Dict, Any, Optional
 from engine.manager import EngineManager
-from engine.protocol import JobResult
+from engine.protocol import JobResult, InputConfig
 
 class BatchManager:
     def __init__(self, engine_manager: EngineManager):
@@ -42,12 +42,26 @@ class BatchManager:
             while not success and retries >= 0:
                 try:
                     # 1. Submit job (assuming calculate_job command)
-                    # Note: payload should match what harness expects
-                    # In harness.py, calculate_job expects {"path": Optional[str], "inputs": Dict}
-                    # Frontend includes path in each row_input, extract it
+                    # Build InputConfig objects to preserve units
                     path = row_input.get("path")
-                    inputs_dict = {k: v for k, v in row_input.items() if k != "path"}
-                    job_id = self.engine.submit_job("calculate_job", {"path": path, "inputs": inputs_dict})
+
+                    # Extract input configs from row_input
+                    # Frontend sends: {"path": "file.mcdx", "L": {"value": 10, "units": "ft"}, "P": {"value": 5}}
+                    # Legacy format: {"path": "file.mcdx", "L": 10, "P": 5}
+                    input_configs = []
+                    for k, v in row_input.items():
+                        if k == "path":
+                            continue  # Skip path field
+                        if isinstance(v, dict) and "value" in v:
+                            # New format: structured dict with value and units
+                            units = v.get("units")
+                            input_configs.append(InputConfig(alias=k, value=v["value"], units=units))
+                        else:
+                            # Legacy format: simple key-value (units not specified)
+                            # Wrap in InputConfig with units=None
+                            input_configs.append(InputConfig(alias=k, value=v, units=None))
+
+                    job_id = self.engine.submit_job("calculate_job", {"path": path, "inputs": input_configs})
                     
                     # 2. Poll for completion
                     result = self._poll_result(job_id)

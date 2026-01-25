@@ -99,7 +99,7 @@ This roadmap delivers the Mathcad Automator in vertical slices, prioritizing the
 
 **Goal:** Add option to specify units of inputs (e.g., in, ft, kip, or blank)
 **Depends on:** Phase 2.1
-**Plans:** 5 plans in 3 waves (1/5 complete)
+**Plans:** 5 plans in 3 waves (2/5 complete)
 
 **Reason:** The set_real_input method accepts a units argument. Users should be able to define custom units or leave blank for default behavior.
 
@@ -117,7 +117,7 @@ This roadmap delivers the Mathcad Automator in vertical slices, prioritizing the
 
 **Plans:**
 - [x] 02.2-01-PLAN.md — Add InputConfig dataclass to protocol.py
-- [ ] 02.2-02-PLAN.md — Update worker.set_input() and harness.calculate_job() for units support
+- [x] 02.2-02-PLAN.md — Update worker.set_input() and harness.calculate_job() for units support
 - [ ] 02.2-03-PLAN.md — Update batch_manager to build InputConfig objects
 - [ ] 02.2-04-PLAN.md — Add units selector UI to InputModal and InputConfig type to api.ts
 - [ ] 02.2-05-PLAN.md — End-to-end verification of units specification

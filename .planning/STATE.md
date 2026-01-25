@@ -6,11 +6,11 @@
 ## Current Position
 
 **Phase:** 2.2 - Input Units Specification
-**Plan:** 1 of 1 in current phase
-**Status:** Phase complete
-**Last activity:** 2026-01-26 - Added InputConfig dataclass for units-aware input specification.
+**Plan:** 2 of 5 in current phase
+**Status:** In progress
+**Last activity:** 2026-01-26 - Worker and harness units support for InputConfig array.
 
-Progress: ████████░░ 63% (12/19 known plans complete)
+Progress: ████████████░░░ 71% (10/14 known plans complete)
 
 | Phase | Goal | Status |
 |-------|------|--------|
@@ -50,11 +50,13 @@ Progress: ████████░░ 63% (12/19 known plans complete)
 ## Session Continuity
 
 ### Last Session
-- Completed Phase 2.2 Plan 01: Input Units Specification.
-- Added InputConfig dataclass to protocol.py with alias, value, and units fields.
-- Units field is Optional[str] with None default for backward compatibility.
-- Type-safe structure for batch processing with units specification support.
+- Completed Phase 2.2 Plan 02: Worker and Harness Units Support.
+- Updated worker.set_input() to accept optional units parameter with type hint
+- Updated harness.calculate_job() to process InputConfig array instead of simple dict
+- Backward compatibility maintained for old dict-based input format
+- Units parameter correctly passed to MathcadPy's set_real_input()
 
 ### Next Steps
-1. **Next:** Phase 2 Plan 06 - Batch Manager Integration with InputConfig
-2. Then: Phase 3 - Workflow Orchestration (multi-file chaining)
+1. **Next:** Phase 2.2 Plan 03 - (check plan file for details)
+2. Then: Remaining Phase 2.2 plans (04, 05)
+3. After Phase 2.2 complete: Phase 3 - Workflow Orchestration (multi-file chaining)
