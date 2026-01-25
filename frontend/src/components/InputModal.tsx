@@ -2,12 +2,32 @@ import { Modal, NumberInput, Button, Stack, Group, Tabs, FileInput, Text, Select
 import { useState, useEffect } from 'react'
 import { generateRange } from '../utils/generators'
 import { parseCSV, getHeaders } from '../utils/csv_parser'
+import type { InputConfig } from '../services/api'
+
+const UNIT_PRESETS = [
+  { value: "", label: "Use Worksheet Units (Default)" },
+  { value: "in", label: "in (inches)" },
+  { value: "ft", label: "ft (feet)" },
+  { value: "mm", label: "mm (millimeters)" },
+  { value: "m", label: "m (meters)" },
+  { value: "kip", label: "kip (kilopound force)" },
+  { value: "lbf", label: "lbf (pound force)" },
+  { value: "N", label: "N (newton)" },
+  { value: "kN", label: "kN (kilonewton)" },
+  { value: "Pa", label: "Pa (pascal)" },
+  { value: "MPa", label: "MPa (megapascal)" },
+  { value: "psi", label: "psi (pounds per square inch)" },
+  { value: "ksf", label: "ksf (kip per square foot)" },
+  { value: "kip/ft", label: "kip/ft (force per length)" },
+  { value: "kip-in", label: "kip-in (moment)" },
+  { value: "lb-ft", label: "lb-ft (pound-foot moment)" },
+];
 
 interface InputModalProps {
   opened: boolean
   onClose: () => void
   alias: string
-  onSave: (values: any[]) => void
+  onSave: (config: InputConfig) => void  // Changed from (values: any[]) => void
 }
 
 export const InputModal = ({ opened, onClose, alias, onSave }: InputModalProps) => {
@@ -23,6 +43,7 @@ export const InputModal = ({ opened, onClose, alias, onSave }: InputModalProps) 
   const [csvHeaders, setCsvHeaders] = useState<string[]>([])
   const [selectedHeader, setSelectedHeader] = useState<string | null>(null)
   const [csvData, setCsvData] = useState<any[]>([])
+  const [selectedUnits, setSelectedUnits] = useState<string | null>("")
 
   useEffect(() => {
     if (csvFile) {
@@ -36,14 +57,18 @@ export const InputModal = ({ opened, onClose, alias, onSave }: InputModalProps) 
   }, [csvFile]);
 
   const handleSave = () => {
-    if (activeTab === 'range') {
-      const values = generateRange(Number(start), Number(end), Number(step));
-      onSave(values);
-    } else if (activeTab === 'csv') {
-      if (selectedHeader && csvData.length > 0) {
-        const values = csvData.map(row => row[selectedHeader]);
-        onSave(values);
-      }
+    const value: any = activeTab === 'range'
+      ? generateRange(Number(start), Number(end), Number(step))
+      : (selectedHeader && csvData.length > 0
+        ? csvData.map(row => row[selectedHeader])
+        : null);
+
+    if (value !== null) {
+      onSave({
+        alias: alias,
+        value: value,
+        units: selectedUnits || undefined  // Convert "" to undefined
+      });
     }
   }
 
@@ -95,6 +120,16 @@ export const InputModal = ({ opened, onClose, alias, onSave }: InputModalProps) 
             </Stack>
           </Tabs.Panel>
         </Tabs>
+
+        <Select
+          label="Units"
+          placeholder="Select units (optional)"
+          data={UNIT_PRESETS}
+          value={selectedUnits}
+          onChange={setSelectedUnits}
+          searchable
+          clearable  // Allow clearing selection (goes back to default "")
+        />
 
         <Group justify="flex-end" mt="md">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
