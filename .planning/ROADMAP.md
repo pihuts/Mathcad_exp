@@ -128,8 +128,8 @@ This roadmap delivers the Mathcad Automator in vertical slices, prioritizing the
 
 | Phase | Status | Requirements |
 |-------|--------|--------------|
-| 1 - Core Engine | **Planned** | 6 |
-| 2 - Batch Processing | **Planned** | 13 |
+| 1 - Core Engine | **Complete** | 6 |
+| 2 - Batch Processing | **In progress** | 13 |
 | 3 - Workflow | **Planned** | 3 |
 | 4 - Library | **Planned** | 2 |
 | 5 - Packaging | **Planned** | 2 |
