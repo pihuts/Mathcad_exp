@@ -12,7 +12,7 @@ parent_dir = os.path.dirname(current_dir)
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-from engine.protocol import JobRequest, JobResult
+from engine.protocol import JobRequest, JobResult, InputConfig
 from engine.worker import MathcadWorker
 
 def run_harness(input_queue: multiprocessing.Queue, output_queue: multiprocessing.Queue):
@@ -106,20 +106,31 @@ def run_harness(input_queue: multiprocessing.Queue, output_queue: multiprocessin
                     )
                 elif job.command == "calculate_job":
                     path = job.payload.get("path")
-                    inputs = job.payload.get("inputs", {})
+                    inputs_config = job.payload.get("inputs", [])  # Array of InputConfig objects
 
                     if path:
                         worker.open_file(path)
 
-                    # Set inputs
-                    for alias, value in inputs.items():
-                        worker.set_input(alias, value)
+                    # Set inputs with units
+                    for input_config in inputs_config:
+                        # Support both old dict format and new InputConfig objects
+                        if isinstance(input_config, dict):
+                            alias = input_config.get("alias")
+                            value = input_config.get("value")
+                            units = input_config.get("units")
+                        else:
+                            # InputConfig object
+                            alias = input_config.alias
+                            value = input_config.value
+                            units = input_config.units
+
+                        if alias and value is not None:
+                            worker.set_input(alias, value, units)
 
                     # Recalculate worksheet
                     worker.synchronize()
 
                     # Fetch all outputs
-                    # We get a list of available outputs first
                     meta_outputs = worker.get_outputs()
                     output_data = {}
 
@@ -129,9 +140,6 @@ def run_harness(input_queue: multiprocessing.Queue, output_queue: multiprocessin
                             val = worker.get_output_value(alias)
                             output_data[alias] = val
                         except Exception as e:
-                            # Log error but don't fail the whole job?
-                            # Or maybe return error?
-                            # For now, return error string as value
                             output_data[alias] = f"Error: {str(e)}"
 
                     result = JobResult(
