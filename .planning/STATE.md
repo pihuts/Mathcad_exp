@@ -38,6 +38,7 @@ Progress: ███████░░░ 58% (11/19 known plans complete)
 
 ### Roadmap Evolution
 - Phase 2.1 inserted after Phase 2: MathcadPy Migration (COMPLETED) - Replaced fragile COM implementation with stable MathcadPy library
+- Phase 2.2 inserted after Phase 2.1: Input Units Specification (URGENT) - Add option to specify units for inputs (in, ft, kip, blank)
 
 ### Performance Metrics
 - **Requirements Covered:** 100% (Phase 1), ~70% (Phase 2)
