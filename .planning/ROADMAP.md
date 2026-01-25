@@ -71,7 +71,8 @@ This roadmap delivers the Mathcad Automator in vertical slices, prioritizing the
 **Focus:** Library integration, API migration, stability
 **Reason:** Current COM implementation has fragile API calls that require constant debugging. MathcadPy provides a tested, maintained abstraction.
 
-**Plans:** 1 plan in 1 wave
+**Completed:** 2026-01-25
+**Plans:** 1 plan in 1 wave (1/1 complete)
 
 ### Dependencies
 - Phase 2 (Batch Processing core complete)
@@ -159,7 +160,7 @@ This roadmap delivers the Mathcad Automator in vertical slices, prioritizing the
 |-------|--------|--------------|
 | 1 - Core Engine | **Complete** | 6 |
 | 2 - Batch Processing | **In progress** (4/5 plans complete) | 13 |
-| 2.1 - MathcadPy Migration | **Planned** (1 plan ready) | 4 |
+| 2.1 - MathcadPy Migration | **Complete** | 4 |
 | 3 - Workflow | **Planned** | 3 |
 | 4 - Library | **Planned** | 2 |
 | 5 - Packaging | **Planned** | 2 |
