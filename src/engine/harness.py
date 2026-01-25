@@ -59,10 +59,22 @@ def run_harness(input_queue: multiprocessing.Queue, output_queue: multiprocessin
                     )
                 elif job.command == "connect":
                     worker.connect()
+                    worker.discover_constants()
                     result = JobResult(
                         job_id=job.id,
                         status="success",
                         data={"message": "Connected to Mathcad"}
+                    )
+                elif job.command == "save_as":
+                    path = job.payload.get("path")
+                    format_enum = job.payload.get("format")
+                    if not path:
+                        raise ValueError("Payload missing 'path'")
+                    worker.save_as(path, format_enum)
+                    result = JobResult(
+                        job_id=job.id,
+                        status="success",
+                        data={"message": f"Saved to {path}"}
                     )
                 elif job.command == "load_file":
                     path = job.payload.get("path")

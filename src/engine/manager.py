@@ -26,6 +26,9 @@ class EngineManager:
         self.collector_thread: Optional[threading.Thread] = None
         self.stop_collector: bool = False
         
+        from engine.batch_manager import BatchManager
+        self.batch_manager = BatchManager(self)
+        
     def start_engine(self):
         """Starts the sidecar process and result collector."""
         if self.is_running():
@@ -61,12 +64,14 @@ class EngineManager:
             self.collector_thread.join(timeout=1.0)
             
         try:
-            self.input_queue.put(None)
-            self.process.join(timeout=2.0)
+            if self.input_queue:
+                self.input_queue.put(None)
+            if self.process:
+                self.process.join(timeout=2.0)
         except Exception as e:
             print(f"Error during graceful shutdown: {e}")
 
-        if self.process.is_alive():
+        if self.process and self.process.is_alive():
             print("Engine did not stop gracefully, terminating...")
             self.process.terminate()
             self.process.join(timeout=1.0)
@@ -85,11 +90,11 @@ class EngineManager:
     def is_running(self) -> bool:
         return self.process is not None and self.process.is_alive()
 
-    def submit_job(self, command: str, payload: Dict[str, Any] = None) -> str:
+    def submit_job(self, command: str, payload: Optional[Dict[str, Any]] = None) -> str:
         """
         Submits a job to the engine. Returns the job ID.
         """
-        if not self.is_running():
+        if not self.is_running() or self.input_queue is None:
             raise RuntimeError("Engine is not running")
             
         if payload is None:
