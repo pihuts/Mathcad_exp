@@ -1,46 +1,23 @@
-import pythoncom
-import win32com.client
-import os
+from MathcadPy import Mathcad
+from pathlib import Path
 from typing import List, Dict, Any, Optional
 
 class MathcadWorker:
     def __init__(self):
-        self.mc = None
-        self.worksheet = None
-        self.constants = {}
-        # Initialize COM library for this thread - CRITICAL for multiprocess
-        pythoncom.CoInitialize()
-
-    def discover_constants(self):
-        """
-        Inspects win32com.client.constants to find relevant enums.
-        """
-        try:
-            from win32com.client import gencache
-            gencache.EnsureDispatch("MathcadPrime.Application")
-            import win32com.client
-            for name in dir(win32com.client.constants):
-                self.constants[name] = getattr(win32com.client.constants, name)
-        except Exception:
-            pass
+        self.mc = None  # Mathcad() instance
+        self.worksheet = None  # Worksheet() instance
+        # COM initialization is handled internally by MathcadPy
 
     def connect(self) -> bool:
         """
         Connects to the Mathcad Prime Application.
-        Returns True if successful, raises exception otherwise.
+        MathcadPy handles COM initialization automatically.
         """
         try:
-            # mathcadpy research suggests "MathcadPrime.Application" is the ProgID
-            self.mc = win32com.client.Dispatch("MathcadPrime.Application")
-            if not self.mc:
-                raise Exception("Dispatch returned None for Mathcad.Application")
-            
-            # Optional: Ensure it's visible or active if needed, but for background we might prefer hidden?
-            # Usually better to see it during dev.
-            self.mc.Visible = True 
+            self.mc = Mathcad(visible=True)
+            print(f"Connected to Mathcad version: {self.mc.version}")
             return True
         except Exception as e:
-            # We want to propagate the error so the harness can report it
             raise Exception(f"Failed to connect to Mathcad: {str(e)}")
 
     def is_connected(self) -> bool:
@@ -49,96 +26,91 @@ class MathcadWorker:
     def open_file(self, path: str):
         if not self.mc:
             raise Exception("Mathcad not connected")
-        
-        abs_path = os.path.abspath(path)
-        if not os.path.exists(abs_path):
-             raise FileNotFoundError(f"File not found: {abs_path}")
-             
+
+        abs_path = Path(path).resolve()
+        if not abs_path.exists():
+            raise FileNotFoundError(f"File not found: {abs_path}")
+
         try:
-            self.worksheet = self.mc.Open(abs_path)
+            self.worksheet = self.mc.open(abs_path)
+            self.worksheet.activate()
         except Exception as e:
             raise Exception(f"Failed to open file {abs_path}: {str(e)}")
 
     def get_inputs(self) -> List[Dict[str, Any]]:
         if not self.worksheet:
             raise Exception("No worksheet open")
-        
-        inputs = []
         try:
-            # Mathcad Prime API: Worksheet.Inputs is a collection
-            for item in self.worksheet.Inputs:
-                inputs.append({
-                    "alias": item.Alias,
-                    "name": item.Name,
-                    "units": item.Units
-                })
+            input_names = self.worksheet.inputs()
+            return [{"alias": name, "name": name, "units": ""} for name in input_names]
         except Exception as e:
             raise Exception(f"Failed to retrieve inputs: {str(e)}")
-        return inputs
 
     def get_outputs(self) -> List[Dict[str, Any]]:
         if not self.worksheet:
             raise Exception("No worksheet open")
-        
-        outputs = []
         try:
-            for item in self.worksheet.Outputs:
-                 outputs.append({
-                    "alias": item.Alias,
-                    "name": item.Name,
-                    "units": item.Units
-                })
+            output_names = self.worksheet.outputs()
+            return [{"alias": name, "name": name, "units": ""} for name in output_names]
         except Exception as e:
-             raise Exception(f"Failed to retrieve outputs: {str(e)}")
-        return outputs
+            raise Exception(f"Failed to retrieve outputs: {str(e)}")
 
     def set_input(self, alias: str, value: Any):
         if not self.worksheet:
             raise Exception("No worksheet open")
         try:
             if isinstance(value, str):
-                self.worksheet.SetStringValue(alias, value)
+                error = self.worksheet.set_string_input(alias, value)
+                if error != 0:
+                    raise Exception(f"set_string_input returned error code {error}")
             else:
-                # Default to Real with empty units
-                self.worksheet.SetRealValue(alias, float(value), "")
+                # Use preserve_worksheet_units=True as default
+                error = self.worksheet.set_real_input(
+                    alias, float(value), units="", preserve_worksheet_units=True
+                )
+                if error != 0:
+                    raise Exception(f"set_real_input returned error code {error}")
         except Exception as e:
-             raise Exception(f"Failed to set input {alias}: {str(e)}")
+            raise Exception(f"Failed to set input {alias}: {str(e)}")
+
+    def synchronize(self):
+        if not self.worksheet:
+            raise Exception("No worksheet open")
+        try:
+            self.worksheet.calculate()  # Alias for synchronize()
+        except Exception as e:
+            raise Exception(f"Failed to synchronize worksheet: {str(e)}")
 
     def get_output_value(self, alias: str) -> Any:
         if not self.worksheet:
             raise Exception("No worksheet open")
         try:
-            # Try Real first
-            return self.worksheet.OutputGetRealValue(alias, "")
-        except:
-            # Try String
-            try:
-                return self.worksheet.OutputGetStringValue(alias)
-            except Exception as e:
-                raise Exception(f"Failed to get output {alias}: {str(e)}")
+            value, units, error_code = self.worksheet.get_real_output(alias)
+            if error_code != 0:
+                raise Exception(f"Error getting output {alias}: ErrorCode {error_code}")
+            return value  # Unwrap tuple, return only value
+        except Exception as e:
+            raise Exception(f"Failed to get output {alias}: {str(e)}")
 
     def save_as(self, path: str, format_enum: Optional[int] = None):
         """
         Saves the current worksheet in the specified format.
-        Defaults to PDF (3) if format_enum is not provided.
+        MathcadPy handles format detection from file extension.
+        format_enum parameter ignored (kept for backward compatibility).
         """
         if not self.worksheet:
             raise Exception("No worksheet open")
-        
-        abs_path = os.path.abspath(path)
-        
-        # If no format_enum provided, try to find one from discovered constants
-        if format_enum is None:
-            # Look for something like 'spFileFormatPDF' or similar
-            # If not found, fall back to 3 (common for PDF)
-            format_enum = 3
-            for name, value in self.constants.items():
-                if "PDF" in name.upper():
-                    format_enum = value
-                    break
+
+        abs_path = Path(path)
+
+        # Check PDF export support (only works with Mathcad Prime 5+)
+        if abs_path.suffix.lower() == ".pdf":
+            if self.mc.version_major_int <= 4:
+                raise ValueError(
+                    f"PDF export requires Mathcad Prime 5+, current version: {self.mc.version}"
+                )
 
         try:
-            # Mathcad Prime API SaveAs(path, format)
-            self.worksheet.SaveAs(abs_path, format_enum)
+            self.worksheet.save_as(abs_path)  # MathcadPy auto-detects format from extension
         except Exception as e:
             raise Exception(f"Failed to save to {abs_path}: {str(e)}")
