@@ -28,7 +28,14 @@ class TestEngineManager(unittest.TestCase):
         print(f"Submitted job {job_id}")
         
         # 3. Get Result
-        result = self.manager.get_result(timeout=5.0)
+        start_time = time.time()
+        result = None
+        while time.time() - start_time < 5.0:
+            result = self.manager.get_job(job_id)
+            if result:
+                break
+            time.sleep(0.1)
+            
         self.assertIsNotNone(result, "Should receive a result")
         print(f"Received result: {result}")
         

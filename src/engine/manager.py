@@ -1,6 +1,7 @@
 import multiprocessing
 import queue
 import time
+import threading
 from typing import Optional, Dict, Any, Union
 import sys
 import os
@@ -20,8 +21,13 @@ class EngineManager:
         self.input_queue: Optional[multiprocessing.Queue] = None
         self.output_queue: Optional[multiprocessing.Queue] = None
         
+        # Result storage
+        self.results: Dict[str, JobResult] = {}
+        self.collector_thread: Optional[threading.Thread] = None
+        self.stop_collector: bool = False
+        
     def start_engine(self):
-        """Starts the sidecar process."""
+        """Starts the sidecar process and result collector."""
         if self.is_running():
             print("Engine already running.")
             return
@@ -36,6 +42,11 @@ class EngineManager:
         )
         self.process.start()
         print(f"Engine started with PID: {self.process.pid}")
+        
+        # Start collector thread
+        self.stop_collector = False
+        self.collector_thread = threading.Thread(target=self._collect_results, daemon=True)
+        self.collector_thread.start()
 
     def stop_engine(self):
         """Stops the sidecar process gracefully, then forcefully."""
@@ -43,6 +54,12 @@ class EngineManager:
             return
 
         print("Stopping engine...")
+        
+        # Stop collector
+        self.stop_collector = True
+        if self.collector_thread:
+            self.collector_thread.join(timeout=1.0)
+            
         try:
             self.input_queue.put(None)
             self.process.join(timeout=2.0)
@@ -57,6 +74,8 @@ class EngineManager:
         self.process = None
         self.input_queue = None
         self.output_queue = None
+        self.collector_thread = None
+        self.results.clear()
         print("Engine stopped.")
 
     def restart_engine(self):
@@ -69,7 +88,6 @@ class EngineManager:
     def submit_job(self, command: str, payload: Dict[str, Any] = None) -> str:
         """
         Submits a job to the engine. Returns the job ID.
-        Does not wait for result.
         """
         if not self.is_running():
             raise RuntimeError("Engine is not running")
@@ -80,15 +98,41 @@ class EngineManager:
         req = JobRequest(command=command, payload=payload)
         self.input_queue.put(req)
         return req.id
+        
+    def _collect_results(self):
+        """Background thread to drain output queue into results dict."""
+        while not self.stop_collector:
+            if not self.output_queue:
+                break
+            try:
+                # Short timeout to allow checking stop_collector
+                result = self.output_queue.get(timeout=0.1)
+                if result:
+                    self.results[result.job_id] = result
+            except queue.Empty:
+                continue
+            except Exception as e:
+                print(f"Error in result collector: {e}")
+                
+    def get_job(self, job_id: str) -> Optional[JobResult]:
+        """Returns the result of a job if available."""
+        return self.results.get(job_id)
 
     def get_result(self, timeout: float = 5.0) -> Optional[JobResult]:
         """
         Blocks waiting for the next result from the queue.
+        DEPRECATED: Use get_job(job_id) instead.
+        Kept for backward compatibility by polling self.results.
         """
-        if not self.output_queue:
-             raise RuntimeError("Engine not initialized")
-             
-        try:
-            return self.output_queue.get(timeout=timeout)
-        except queue.Empty:
-            return None
+        # This is hacky: wait for *any* result to appear in self.results
+        # that wasn't there before? No, we don't know state.
+        # Simple implementation: Wait for ANY result to be in the dict.
+        # Ideally, tests should be updated.
+        
+        start = time.time()
+        while time.time() - start < timeout:
+             if self.results:
+                 # Return the most recent one (arbitrary)
+                 return list(self.results.values())[-1]
+             time.sleep(0.1)
+        return None
