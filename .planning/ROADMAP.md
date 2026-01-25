@@ -128,6 +128,7 @@ This roadmap delivers the Mathcad Automator in vertical slices, prioritizing the
 
 **Goal:** Users can chain multiple Mathcad files where outputs drive downstream inputs.
 **Focus:** Data Mapping, Chaining Logic
+**Plans:** 8 plans in 1 wave
 
 ### Dependencies
 - Phase 2 (Batch System)
@@ -142,6 +143,16 @@ This roadmap delivers the Mathcad Automator in vertical slices, prioritizing the
 2. User can map an Output variable from File A to an Input variable in File B.
 3. Execution automatically passes calculated data from File A to File B.
 4. Final results include data from all files in the chain.
+
+**Plans:**
+- [ ] 03-01-PLAN.md — Add workflow Pydantic models to protocol.py
+- [ ] 03-02-PLAN.md — Create WorkflowManager class for orchestration
+- [ ] 03-03-PLAN.md — Add workflow API endpoints
+- [ ] 03-04-PLAN.md — Add workflow TypeScript types to api.ts
+- [ ] 03-05-PLAN.md — Create WorkflowBuilder component with drag-and-drop
+- [ ] 03-06-PLAN.md — Create MappingModal for output-to-input mapping
+- [ ] 03-07-PLAN.md — Create useWorkflow hook for state management
+- [ ] 03-08-PLAN.md — Integrate workflow UI into App.tsx
 
 ---
 
@@ -191,6 +202,6 @@ This roadmap delivers the Mathcad Automator in vertical slices, prioritizing the
 | 2 - Batch Processing | **In progress** (5/6 plans complete) | 13 |
 | 2.1 - MathcadPy Migration | **Complete** | 4 |
 | 2.2 - Input Units Specification | **In progress** (1/5 plans complete) | 4 |
-| 3 - Workflow | **Planned** | 3 |
+| 3 - Workflow | **Planned** (8 plans ready) | 3 |
 | 4 - Library | **Planned** | 2 |
 | 5 - Packaging | **Planned** | 2 |
