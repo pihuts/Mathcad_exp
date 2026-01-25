@@ -6,11 +6,11 @@
 ## Current Position
 
 **Phase:** 2.2 - Input Units Specification
-**Plan:** 3 of 5 in current phase
-**Status:** Phase complete
-**Last activity:** 2026-01-26 - Batch manager builds InputConfig objects with units preservation.
+**Plan:** 4 of 5 in current phase
+**Status:** In progress
+**Last activity:** 2026-01-26 - Added InputConfig TypeScript interface and units selector UI to InputModal.
 
-Progress: ███████████░░░░ 79% (11/14 known plans complete)
+Progress: ██████████░░░░ 84% (12/14 known plans complete)
 
 | Phase | Goal | Status |
 |-------|------|--------|
@@ -25,9 +25,9 @@ Progress: ███████████░░░░ 79% (11/14 known plans c
 ## Context & Memory
 
 ### Active Context
-- **Focus:** Backend orchestration with stable MathcadPy integration.
-- **Risk:** MathcadPy library provides tested COM abstraction; needs real-world validation.
-- **Architecture:** Sidecar pattern operational. BatchManager runs in background thread. Worker uses MathcadPy abstraction.
+- **Focus:** Frontend UI for units specification with InputConfig type safety.
+- **Risk:** Mantine v7 Select doesn't support creatable prop - custom unit entry requires additional implementation.
+- **Architecture:** Frontend now uses InputConfig interface matching backend dataclass structure.
 
 ### Recent Decisions
 - **MathcadPrime.Application:** Switched to this ProgID as it is the registered one in the environment.
@@ -38,6 +38,7 @@ Progress: ███████████░░░░ 79% (11/14 known plans c
 - **MathcadPy Migration:** COMPLETED - Replaced fragile COM implementation with mature MathcadPy library. Uses file extension detection, automatic COM initialization, tuple unwrapping.
 - **InputConfig Dataclass:** Added to protocol.py for type-safe, units-aware input configuration. Uses Optional[str] for units with None default to preserve worksheet default behavior.
 - **Dual-Format Input Support:** Batch manager supports both new structured format ({"L": {"value": 10, "units": "ft"}}) and legacy simple dict ({"L": 10, "P": 5}) for gradual migration.
+- **Frontend InputConfig Interface:** TypeScript interface mirroring backend dataclass with alias, value, and optional units fields for type safety across frontend.
 
 ### Roadmap Evolution
 - Phase 2.1 inserted after Phase 2: MathcadPy Migration (COMPLETED) - Replaced fragile COM implementation with stable MathcadPy library
@@ -51,13 +52,14 @@ Progress: ███████████░░░░ 79% (11/14 known plans c
 ## Session Continuity
 
 ### Last Session
-- Completed Phase 2.2 Plan 03: Batch Manager InputConfig Integration.
-- Updated batch_manager to import InputConfig and build InputConfig objects from row_input
-- Implemented dual-format support: new structured format with units and legacy simple dict format
-- Units field preserved when present in row_input, defaults to None for legacy compatibility
-- Harness already updated in plan 02.2-02 to process InputConfig array with units
+- Completed Phase 2.2 Plan 04: Frontend Units UI Integration.
+- Added InputConfig TypeScript interface to api.ts with alias, value, and optional units fields
+- Created UNIT_PRESETS constant with 16 common engineering units in InputModal.tsx
+- Updated InputModalProps interface to accept InputConfig instead of any[]
+- Added units selector with Mantine Select component (searchable, clearable)
+- Modified handleSave to return InputConfig object with alias, value, and units fields
+- Note: Mantine v7 Select doesn't support creatable prop - custom unit entry not available
 
 ### Next Steps
-1. **Next:** Phase 2.2 Plan 04 - Frontend Units UI Integration
-2. Then: Phase 2.2 Plan 05 - E2E Testing with Units
-3. After Phase 2.2 complete: Phase 3 - Workflow Orchestration (multi-file chaining)
+1. **Next:** Phase 2.2 Plan 05 - E2E Testing with Units
+2. Then: After Phase 2.2 complete: Phase 3 - Workflow Orchestration (multi-file chaining)
