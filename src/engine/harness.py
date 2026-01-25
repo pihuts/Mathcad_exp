@@ -85,6 +85,38 @@ def run_harness(input_queue: multiprocessing.Queue, output_queue: multiprocessin
                             "outputs": outputs
                         }
                     )
+                elif job.command == "calculate_job":
+                    path = job.payload.get("path")
+                    inputs = job.payload.get("inputs", {})
+                    
+                    if path:
+                        worker.open_file(path)
+                    
+                    # Set inputs
+                    for alias, value in inputs.items():
+                        worker.set_input(alias, value)
+                        
+                    # Fetch all outputs
+                    # We get the list of available outputs first
+                    meta_outputs = worker.get_outputs()
+                    output_data = {}
+                    
+                    for out_meta in meta_outputs:
+                        alias = out_meta["alias"]
+                        try:
+                            val = worker.get_output_value(alias)
+                            output_data[alias] = val
+                        except Exception as e:
+                            # Log error but don't fail the whole job? 
+                            # Or maybe return error?
+                            # For now, return error string as value
+                            output_data[alias] = f"Error: {str(e)}"
+                            
+                    result = JobResult(
+                        job_id=job.id,
+                        status="success",
+                        data={"outputs": output_data}
+                    )
                 else:
                     result = JobResult(
                         job_id=job.id,

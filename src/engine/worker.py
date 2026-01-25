@@ -77,3 +77,28 @@ class MathcadWorker:
         except Exception as e:
              raise Exception(f"Failed to retrieve outputs: {str(e)}")
         return outputs
+
+    def set_input(self, alias: str, value: Any):
+        if not self.worksheet:
+            raise Exception("No worksheet open")
+        try:
+            if isinstance(value, str):
+                self.worksheet.SetStringValue(alias, value)
+            else:
+                # Default to Real with empty units
+                self.worksheet.SetRealValue(alias, float(value), "")
+        except Exception as e:
+             raise Exception(f"Failed to set input {alias}: {str(e)}")
+
+    def get_output_value(self, alias: str) -> Any:
+        if not self.worksheet:
+            raise Exception("No worksheet open")
+        try:
+            # Try Real first
+            return self.worksheet.OutputGetRealValue(alias, "")
+        except:
+            # Try String
+            try:
+                return self.worksheet.OutputGetStringValue(alias)
+            except Exception as e:
+                raise Exception(f"Failed to get output {alias}: {str(e)}")
