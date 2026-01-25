@@ -44,7 +44,10 @@ class BatchManager:
                     # 1. Submit job (assuming calculate_job command)
                     # Note: payload should match what harness expects
                     # In harness.py, calculate_job expects {"path": Optional[str], "inputs": Dict}
-                    job_id = self.engine.submit_job("calculate_job", {"inputs": row_input})
+                    # Frontend includes path in each row_input, extract it
+                    path = row_input.get("path")
+                    inputs_dict = {k: v for k, v in row_input.items() if k != "path"}
+                    job_id = self.engine.submit_job("calculate_job", {"path": path, "inputs": inputs_dict})
                     
                     # 2. Poll for completion
                     result = self._poll_result(job_id)
