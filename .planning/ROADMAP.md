@@ -65,7 +65,7 @@ This roadmap delivers the Mathcad Automator in vertical slices, prioritizing the
 
 ---
 
-## Phase 2.1: MathcadPy Migration (INSERTED)
+## Phase 2.1: MathcadPy Migration (COMPLETE)
 
 **Goal:** Replace custom COM implementation with mature MathcadPy library for reliable Mathcad Prime communication.
 **Focus:** Library integration, API migration, stability
@@ -90,7 +90,7 @@ This roadmap delivers the Mathcad Automator in vertical slices, prioritizing the
 4. All Phase 2 batch functionality continues to work
 
 **Plans:**
-- [ ] 02.1-01-PLAN.md — Replace worker.py with MathcadPy implementation and verify functionality
+- [x] 02.1-01-PLAN.md — Replace worker.py with MathcadPy implementation and verify functionality
 
 ---
 

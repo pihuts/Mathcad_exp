@@ -5,17 +5,18 @@
 
 ## Current Position
 
-**Phase:** 2 - Batch Processing System
-**Plan:** 04 - Input Generation
-**Status:** In Progress
-**Last activity:** 2026-01-25 - Completed 02-04-PLAN.md
+**Phase:** 2.1 - MathcadPy Migration
+**Plan:** 1 of 1 in current phase
+**Status:** Phase complete
+**Last activity:** 2026-01-25 - Completed MathcadPy migration of worker.py.
 
-Progress: █████████░ 87% (7/8 known plans complete)
+Progress: ███████░░░ 58% (11/19 known plans complete)
 
 | Phase | Goal | Status |
 |-------|------|--------|
 | **1. Core Engine** | **Reliable Mathcad control & COM stability** | **Complete** |
-| 2. Batch Processing | Parameter studies & Output generation | In Progress |
+| 2. Batch Processing | Parameter studies & Output generation | In Progress (4/5) |
+| **2.1 MathcadPy Migration** | **Replace COM with MathcadPy library** | **Complete** |
 | 3. Workflow | Multi-file chaining | Pending |
 | 4. Library | Configuration persistence | Pending |
 | 5. Packaging | Standalone distribution | Pending |
@@ -23,9 +24,9 @@ Progress: █████████░ 87% (7/8 known plans complete)
 ## Context & Memory
 
 ### Active Context
-- **Focus:** Backend orchestration and export capabilities.
-- **Risk:** Mathcad COM API fragility handling is implemented but needs real-world stress testing.
-- **Architecture:** Sidecar pattern operational. BatchManager runs in background thread.
+- **Focus:** Backend orchestration with stable MathcadPy integration.
+- **Risk:** MathcadPy library provides tested COM abstraction; needs real-world validation.
+- **Architecture:** Sidecar pattern operational. BatchManager runs in background thread. Worker uses MathcadPy abstraction.
 
 ### Recent Decisions
 - **MathcadPrime.Application:** Switched to this ProgID as it is the registered one in the environment.
@@ -33,6 +34,10 @@ Progress: █████████░ 87% (7/8 known plans complete)
 - **None-Safety:** Hardened EngineManager with checks to prevent crashes during process lifecycle transitions.
 - **Lazy Imports:** Used to break circular dependency between EngineManager and BatchManager.
 - **Per-Alias Configuration:** Frontend UI now allows configuring each input alias individually via Range or CSV.
+- **MathcadPy Migration:** COMPLETED - Replaced fragile COM implementation with mature MathcadPy library. Uses file extension detection, automatic COM initialization, tuple unwrapping.
+
+### Roadmap Evolution
+- Phase 2.1 inserted after Phase 2: MathcadPy Migration (COMPLETED) - Replaced fragile COM implementation with stable MathcadPy library
 
 ### Performance Metrics
 - **Requirements Covered:** 100% (Phase 1), ~70% (Phase 2)
@@ -42,9 +47,11 @@ Progress: █████████░ 87% (7/8 known plans complete)
 ## Session Continuity
 
 ### Last Session
-- Completed Plan 02-04: Input Generation.
-- Implemented client-side CSV parsing and Range generation logic.
-- Enhanced InputModal and App UI to support multi-alias batch configuration.
+- Completed Phase 2.1 Plan 01: MathcadPy Migration.
+- Replaced worker.py with MathcadPy library implementation.
+- Preserved exact worker interface (harness.py requires minimal changes).
+- File extension detection for save operations (no format_enum needed).
 
 ### Next Steps
-1. Implement Phase 2 Plan 05: Output Organization & Naming.
+1. **Next:** Phase 2 Plan 05 - End-to-end Verification (with stable MathcadPy worker)
+2. Then: Phase 3 - Workflow Orchestration (multi-file chaining)
