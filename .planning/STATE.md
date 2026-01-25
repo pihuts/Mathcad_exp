@@ -5,18 +5,19 @@
 
 ## Current Position
 
-**Phase:** 2.1 - MathcadPy Migration
+**Phase:** 2.2 - Input Units Specification
 **Plan:** 1 of 1 in current phase
 **Status:** Phase complete
-**Last activity:** 2026-01-25 - Completed MathcadPy migration of worker.py.
+**Last activity:** 2026-01-26 - Added InputConfig dataclass for units-aware input specification.
 
-Progress: ███████░░░ 58% (11/19 known plans complete)
+Progress: ████████░░ 63% (12/19 known plans complete)
 
 | Phase | Goal | Status |
 |-------|------|--------|
 | **1. Core Engine** | **Reliable Mathcad control & COM stability** | **Complete** |
-| 2. Batch Processing | Parameter studies & Output generation | In Progress (4/5) |
+| 2. Batch Processing | Parameter studies & Output generation | In Progress (5/6) |
 | **2.1 MathcadPy Migration** | **Replace COM with MathcadPy library** | **Complete** |
+| **2.2 Input Units Specification** | **Add option to specify units for inputs** | **Complete** |
 | 3. Workflow | Multi-file chaining | Pending |
 | 4. Library | Configuration persistence | Pending |
 | 5. Packaging | Standalone distribution | Pending |
@@ -35,10 +36,11 @@ Progress: ███████░░░ 58% (11/19 known plans complete)
 - **Lazy Imports:** Used to break circular dependency between EngineManager and BatchManager.
 - **Per-Alias Configuration:** Frontend UI now allows configuring each input alias individually via Range or CSV.
 - **MathcadPy Migration:** COMPLETED - Replaced fragile COM implementation with mature MathcadPy library. Uses file extension detection, automatic COM initialization, tuple unwrapping.
+- **InputConfig Dataclass:** Added to protocol.py for type-safe, units-aware input configuration. Uses Optional[str] for units with None default to preserve worksheet default behavior.
 
 ### Roadmap Evolution
 - Phase 2.1 inserted after Phase 2: MathcadPy Migration (COMPLETED) - Replaced fragile COM implementation with stable MathcadPy library
-- Phase 2.2 inserted after Phase 2.1: Input Units Specification (URGENT) - Add option to specify units for inputs (in, ft, kip, blank)
+- Phase 2.2 inserted after Phase 2.1: Input Units Specification (COMPLETED) - Added InputConfig dataclass for units-aware input specification (in, ft, kip, blank)
 
 ### Performance Metrics
 - **Requirements Covered:** 100% (Phase 1), ~70% (Phase 2)
@@ -48,11 +50,11 @@ Progress: ███████░░░ 58% (11/19 known plans complete)
 ## Session Continuity
 
 ### Last Session
-- Completed Phase 2.1 Plan 01: MathcadPy Migration.
-- Replaced worker.py with MathcadPy library implementation.
-- Preserved exact worker interface (harness.py requires minimal changes).
-- File extension detection for save operations (no format_enum needed).
+- Completed Phase 2.2 Plan 01: Input Units Specification.
+- Added InputConfig dataclass to protocol.py with alias, value, and units fields.
+- Units field is Optional[str] with None default for backward compatibility.
+- Type-safe structure for batch processing with units specification support.
 
 ### Next Steps
-1. **Next:** Phase 2 Plan 05 - End-to-end Verification (with stable MathcadPy worker)
+1. **Next:** Phase 2 Plan 06 - Batch Manager Integration with InputConfig
 2. Then: Phase 3 - Workflow Orchestration (multi-file chaining)
