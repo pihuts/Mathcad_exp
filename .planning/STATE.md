@@ -6,9 +6,9 @@
 ## Current Position
 
 **Phase:** 1 - Core Engine Integration
-**Plan:** 01 - Scaffold & Harness (Complete)
+**Plan:** 02 - Mathcad Implementation (Complete)
 **Status:** In Progress
-**Progress:** 33% (1/3 plans complete)
+**Progress:** 66% (2/3 plans complete)
 
 | Phase | Goal | Status |
 |-------|------|--------|
@@ -21,14 +21,16 @@
 ## Context & Memory
 
 ### Active Context
-- **Focus:** Building the Mathcad communication layer.
-- **Risk:** Mathcad COM API is fragile; need to ensure "Zombie Processes" are avoided as per research.
-- **Architecture:** Sidecar pattern (FastAPI backend + separate Engine Process).
+- **Focus:** Exposing the Engine via API.
+- **Risk:** Mathcad COM API fragility handling is implemented but needs real-world stress testing.
+- **Architecture:** Sidecar pattern operational.
 
 ### Recent Decisions
-- **Phase Structure:** Adopted vertical slicing (Foundation -> Batch -> Workflow) to deliver value early.
-- **IPC Protocol:** Using `dataclasses` and `multiprocessing.Queue` for typed communication between Manager and Harness.
-- **Daemon Process:** Harness runs as a daemon to ensure cleanup on parent exit.
+- **Phase Structure:** Adopted vertical slicing (Foundation -> Batch -> Workflow).
+- **IPC Protocol:** Using `dataclasses` and `multiprocessing.Queue`.
+- **Daemon Process:** Harness runs as a daemon.
+- **COM Initialization:** `CoInitialize` called inside worker process.
+- **Error Handling:** Harness captures worker exceptions and returns structured error results.
 
 ### Performance Metrics
 - **Requirements Covered:** 100% (26/26)
@@ -38,9 +40,10 @@
 ## Session Continuity
 
 ### Last Session
-- Completed Plan 01: Scaffold & Harness.
-- Verified process isolation and basic IPC (ping/pong).
+- Completed Plan 02: Mathcad Implementation.
+- Implemented `MathcadWorker` with `connect`, `open_file`, `set_input`, `get_output`.
+- Verified handling of "Mathcad not installed" scenarios.
 
 ### Next Steps
-1. Execute Plan 02: Implement Mathcad COM wrapper in Harness.
-2. Verify Mathcad interaction stability.
+1. Execute Plan 03: Implement API Layer (FastAPI).
+2. Wire API to EngineManager.
