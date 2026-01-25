@@ -10,6 +10,12 @@ export interface BatchRequest {
   output_dir: string;
 }
 
+export interface InputConfig {
+  alias: string;
+  value: any;
+  units?: string;  // Units specification (e.g., "in", "ft", "kip", or undefined for default)
+}
+
 export interface BatchRow {
   row: number;
   status: string;
@@ -59,11 +65,6 @@ export const stopBatch = async (id: string): Promise<ControlResponse> => {
 
 export const getInputs = async (path: string): Promise<MetaData> => {
   const { data } = await api.post<MetaData>('/engine/analyze', { path });
-  return data;
-};
-
-export const browseFile = async (): Promise<{ path: string }> => {
-  const { data } = await api.get<{ path: string }>('/control/browse');
   return data;
 };
 
