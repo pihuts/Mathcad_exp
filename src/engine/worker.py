@@ -55,7 +55,7 @@ class MathcadWorker:
         except Exception as e:
             raise Exception(f"Failed to retrieve outputs: {str(e)}")
 
-    def set_input(self, alias: str, value: Any):
+    def set_input(self, alias: str, value: Any, units: Optional[str] = None):
         if not self.worksheet:
             raise Exception("No worksheet open")
         try:
@@ -64,9 +64,11 @@ class MathcadWorker:
                 if error != 0:
                     raise Exception(f"set_string_input returned error code {error}")
             else:
-                # Use preserve_worksheet_units=True as default
+                # Pass units to MathcadPy's set_real_input
+                # Default to "" if not specified, preserving worksheet units
+                units_param = units if units is not None else ""
                 error = self.worksheet.set_real_input(
-                    alias, float(value), units="", preserve_worksheet_units=True
+                    alias, float(value), units=units_param, preserve_worksheet_units=True
                 )
                 if error != 0:
                     raise Exception(f"set_real_input returned error code {error}")
