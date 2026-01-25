@@ -65,6 +65,35 @@ This roadmap delivers the Mathcad Automator in vertical slices, prioritizing the
 
 ---
 
+## Phase 2.1: MathcadPy Migration (INSERTED)
+
+**Goal:** Replace custom COM implementation with mature MathcadPy library for reliable Mathcad Prime communication.
+**Focus:** Library integration, API migration, stability
+**Reason:** Current COM implementation has fragile API calls that require constant debugging. MathcadPy provides a tested, maintained abstraction.
+
+**Plans:** 1 plan in 1 wave
+
+### Dependencies
+- Phase 2 (Batch Processing core complete)
+- MathcadPy library (https://github.com/MattWoodhead/MathcadPy)
+
+### Requirements
+- **MIG-01**: Research MathcadPy API and capabilities
+- **MIG-02**: Replace worker.py COM calls with MathcadPy equivalents
+- **MIG-03**: Update harness.py to use new worker interface
+- **MIG-04**: Verify all existing functionality works with new library
+
+### Success Criteria
+1. MathcadPy successfully opens .mcdx files
+2. Input/Output alias enumeration works reliably
+3. Setting input values and reading outputs works
+4. All Phase 2 batch functionality continues to work
+
+**Plans:**
+- [ ] 02.1-01-PLAN.md — Replace worker.py with MathcadPy implementation and verify functionality
+
+---
+
 ## Phase 3: Workflow Orchestration
 
 **Goal:** Users can chain multiple Mathcad files where outputs drive downstream inputs.
@@ -130,6 +159,7 @@ This roadmap delivers the Mathcad Automator in vertical slices, prioritizing the
 |-------|--------|--------------|
 | 1 - Core Engine | **Complete** | 6 |
 | 2 - Batch Processing | **In progress** (4/5 plans complete) | 13 |
+| 2.1 - MathcadPy Migration | **Planned** (1 plan ready) | 4 |
 | 3 - Workflow | **Planned** | 3 |
 | 4 - Library | **Planned** | 2 |
 | 5 - Packaging | **Planned** | 2 |
