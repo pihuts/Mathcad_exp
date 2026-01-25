@@ -13,6 +13,7 @@ if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
 from engine.protocol import JobRequest, JobResult
+from engine.worker import MathcadWorker
 
 def run_harness(input_queue: multiprocessing.Queue, output_queue: multiprocessing.Queue):
     """
@@ -20,6 +21,8 @@ def run_harness(input_queue: multiprocessing.Queue, output_queue: multiprocessin
     """
     print(f"Harness process started. PID: {os.getpid()}")
     
+    worker = MathcadWorker()
+
     while True:
         try:
             # Blocking get with timeout
@@ -53,6 +56,13 @@ def run_harness(input_queue: multiprocessing.Queue, output_queue: multiprocessin
                         job_id=job.id,
                         status="success",
                         data={"response": "pong"}
+                    )
+                elif job.command == "connect":
+                    worker.connect()
+                    result = JobResult(
+                        job_id=job.id,
+                        status="success",
+                        data={"message": "Connected to Mathcad"}
                     )
                 else:
                     result = JobResult(
