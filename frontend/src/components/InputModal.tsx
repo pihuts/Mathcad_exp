@@ -1,61 +1,104 @@
-import { Modal, NumberInput, Button, Stack, Group, TextInput } from '@mantine/core'
-import { useState } from 'react'
+import { Modal, NumberInput, Button, Stack, Group, Tabs, FileInput, Text, Select } from '@mantine/core'
+import { useState, useEffect } from 'react'
+import { generateRange } from '../utils/generators'
+import { parseCSV, getHeaders } from '../utils/csv_parser'
 
 interface InputModalProps {
   opened: boolean
   onClose: () => void
-  onRun: (config: { start: number, end: number, step: number, path: string, alias: string }) => void
+  alias: string
+  onSave: (values: any[]) => void
 }
 
-export const InputModal = ({ opened, onClose, onRun }: InputModalProps) => {
+export const InputModal = ({ opened, onClose, alias, onSave }: InputModalProps) => {
+  const [activeTab, setActiveTab] = useState<string | null>('range')
+  
+  // Range state
   const [start, setStart] = useState<number | string>(0)
-  const [end, setEnd] = useState<number | string>(100)
-  const [step, setStep] = useState<number | string>(10)
-  const [path, setPath] = useState('C:\\temp\\test.mcdx')
-  const [alias, setAlias] = useState('L')
+  const [end, setEnd] = useState<number | string>(10)
+  const [step, setStep] = useState<number | string>(1)
+  
+  // CSV state
+  const [csvFile, setCsvFile] = useState<File | null>(null)
+  const [csvHeaders, setCsvHeaders] = useState<string[]>([])
+  const [selectedHeader, setSelectedHeader] = useState<string | null>(null)
+  const [csvData, setCsvData] = useState<any[]>([])
 
-  const handleRun = () => {
-    onRun({ 
-      start: Number(start), 
-      end: Number(end), 
-      step: Number(step),
-      path,
-      alias
-    });
-    onClose();
+  useEffect(() => {
+    if (csvFile) {
+      getHeaders(csvFile).then(setCsvHeaders).catch(console.error);
+      parseCSV(csvFile).then(setCsvData).catch(console.error);
+    } else {
+      setCsvHeaders([]);
+      setCsvData([]);
+      setSelectedHeader(null);
+    }
+  }, [csvFile]);
+
+  const handleSave = () => {
+    if (activeTab === 'range') {
+      const values = generateRange(Number(start), Number(end), Number(step));
+      onSave(values);
+    } else if (activeTab === 'csv') {
+      if (selectedHeader && csvData.length > 0) {
+        const values = csvData.map(row => row[selectedHeader]);
+        onSave(values);
+      }
+    }
   }
 
   return (
-    <Modal opened={opened} onClose={onClose} title="Configure Batch Inputs">
+    <Modal opened={opened} onClose={onClose} title={`Configure Alias: ${alias}`} size="lg">
       <Stack>
-        <TextInput 
-          label="Mathcad File Path"
-          value={path}
-          onChange={(e) => setPath(e.currentTarget.value)}
-        />
-        <TextInput 
-          label="Input Alias"
-          value={alias}
-          onChange={(e) => setAlias(e.currentTarget.value)}
-        />
-        <NumberInput
-          label="Range Start"
-          value={start}
-          onChange={setStart}
-        />
-        <NumberInput
-          label="Range End"
-          value={end}
-          onChange={setEnd}
-        />
-        <NumberInput
-          label="Increment"
-          value={step}
-          onChange={setStep}
-        />
+        <Tabs value={activeTab} onChange={setActiveTab}>
+          <Tabs.List>
+            <Tabs.Tab value="range">Range</Tabs.Tab>
+            <Tabs.Tab value="csv">CSV File</Tabs.Tab>
+          </Tabs.List>
+
+          <Tabs.Panel value="range" pt="md">
+            <Stack>
+              <Group grow>
+                <NumberInput label="Start" value={start} onChange={setStart} />
+                <NumberInput label="End" value={end} onChange={setEnd} />
+              </Group>
+              <NumberInput label="Step" value={step} onChange={setStep} />
+              <Text size="xs" c="dimmed">
+                Resulting values: {generateRange(Number(start), Number(end), Number(step)).join(', ')}
+              </Text>
+            </Stack>
+          </Tabs.Panel>
+
+          <Tabs.Panel value="csv" pt="md">
+            <Stack>
+              <FileInput 
+                label="Upload CSV" 
+                placeholder="Choose file" 
+                value={csvFile} 
+                onChange={setCsvFile}
+                accept=".csv"
+              />
+              {csvHeaders.length > 0 && (
+                <Select
+                  label="Select Column"
+                  placeholder="Choose column"
+                  data={csvHeaders}
+                  value={selectedHeader}
+                  onChange={setSelectedHeader}
+                />
+              )}
+              {selectedHeader && (
+                <Text size="xs" c="dimmed">
+                  Found {csvData.length} rows.
+                </Text>
+              )}
+            </Stack>
+          </Tabs.Panel>
+        </Tabs>
+
         <Group justify="flex-end" mt="md">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleRun}>Run Batch</Button>
+          <Button onClick={handleSave}>Save Configuration</Button>
         </Group>
       </Stack>
     </Modal>
