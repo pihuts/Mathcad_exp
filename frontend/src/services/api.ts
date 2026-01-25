@@ -62,4 +62,9 @@ export const getInputs = async (path: string): Promise<MetaData> => {
   return data;
 };
 
+export const browseFile = async (): Promise<{ path: string }> => {
+  const { data } = await api.get<{ path: string }>('/control/browse');
+  return data;
+};
+
 export default api;

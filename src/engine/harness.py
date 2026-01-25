@@ -87,6 +87,15 @@ def run_harness(input_queue: multiprocessing.Queue, output_queue: multiprocessin
                         data={"message": f"Opened {path}"}
                     )
                 elif job.command == "get_metadata":
+                    # Ensure connected
+                    if not worker.is_connected():
+                        worker.connect()
+                        worker.discover_constants()
+
+                    path = job.payload.get("path")
+                    if path:
+                        worker.open_file(path)
+                        
                     inputs = worker.get_inputs()
                     outputs = worker.get_outputs()
                     result = JobResult(

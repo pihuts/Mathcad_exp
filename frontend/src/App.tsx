@@ -1,11 +1,11 @@
 import { AppShell, Title, Container, Button, Group, Stack, Progress, Text, TextInput, Table, Badge, ActionIcon } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { IconSettings } from '@tabler/icons-react'
+import { IconSettings, IconFolderOpen } from '@tabler/icons-react'
 import { useState, useMemo } from 'react'
 import { BatchGrid } from './components/BatchGrid'
 import { InputModal } from './components/InputModal'
 import { useBatch } from './hooks/useBatch'
-import { getInputs } from './services/api'
+import { getInputs, browseFile } from './services/api'
 import { generateCartesian } from './utils/generators'
 
 function App() {
@@ -26,6 +26,17 @@ function App() {
       // Reset configs if aliases changed significantly or just keep them
     } catch (err) {
       console.error("Failed to analyze file", err);
+    }
+  }
+
+  const handleBrowse = async () => {
+    try {
+      const { path } = await browseFile();
+      if (path) {
+        setFilePath(path);
+      }
+    } catch (err) {
+      console.error("Failed to browse file", err);
     }
   }
 
@@ -87,6 +98,11 @@ function App() {
                 value={filePath}
                 onChange={(e) => setFilePath(e.currentTarget.value)}
                 style={{ flex: 1 }}
+                rightSection={
+                  <ActionIcon variant="subtle" color="gray" onClick={handleBrowse}>
+                    <IconFolderOpen size={16} />
+                  </ActionIcon>
+                }
               />
               <Button onClick={handleAnalyze}>Analyze File</Button>
             </Group>

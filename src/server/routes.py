@@ -86,3 +86,17 @@ async def analyze_file(payload: Dict[str, Any], manager: EngineManager = Depends
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/control/browse")
+def browse_file():
+    import tkinter as tk
+    from tkinter import filedialog
+    root = tk.Tk()
+    root.withdraw()
+    root.attributes("-topmost", True)
+    file_path = filedialog.askopenfilename(
+        title="Select Mathcad File",
+        filetypes=[("Mathcad Prime Files", "*.mcdx"), ("All Files", "*.*")]
+    )
+    root.destroy()
+    return {"path": file_path}
