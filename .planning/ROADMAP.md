@@ -156,6 +156,24 @@ This roadmap delivers the Mathcad Automator in vertical slices, prioritizing the
 
 ---
 
+## Phase 3.1: Replace text inputs with browse buttons (INSERTED)
+
+**Goal:** Replace all file path text inputs with native Windows file browser dialogs for error-free file selection.
+**Depends on:** Phase 3
+**Plans:** 2 plans in 2 waves
+
+**Rationale:** Current text input approach for file paths is error-prone and inconvenient. Users need to type or paste full file paths. A browse button with native file dialog provides better UX and reduces errors.
+
+**Scope:**
+- Batch processing file input (App.tsx)
+- Workflow file input (WorkflowBuilder.tsx)
+
+Plans:
+- [ ] 03.1-01-PLAN.md — Add backend file browse endpoint using tkinter native dialog
+- [ ] 03.1-02-PLAN.md — Replace text inputs with browse buttons in frontend components
+
+---
+
 ## Phase 4: Library & Persistence
 
 **Goal:** Users can save and reuse common input configurations to save time.
