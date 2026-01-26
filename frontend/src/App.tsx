@@ -1,12 +1,16 @@
-import { AppShell, Title, Container, Button, Group, Stack, Progress, Text, TextInput, Table, Badge, ActionIcon, Alert } from '@mantine/core'
+import { AppShell, Title, Container, Button, Group, Stack, Progress, Text, TextInput, Table, Badge, ActionIcon, Alert, Tabs } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { IconSettings, IconAlertCircle } from '@tabler/icons-react'
 import { useState, useMemo } from 'react'
 import { BatchGrid } from './components/BatchGrid'
 import { InputModal } from './components/InputModal'
+import { WorkflowBuilder } from './components/WorkflowBuilder'
+import { MappingModal } from './components/MappingModal'
 import { useBatch } from './hooks/useBatch'
+import { useWorkflow } from './hooks/useWorkflow'
 import { getInputs } from './services/api'
 import { generateCartesian } from './utils/generators'
+import { WorkflowFile, FileMapping, MetaData, WorkflowConfig, WorkflowStatus } from './services/api'
 
 function App() {
   const [opened, { open, close }] = useDisclosure(false)
@@ -18,7 +22,27 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
+  // Workflow state
+  const [activeTab, setActiveTab] = useState<string | null>('batch');
+  const [workflowFiles, setWorkflowFiles] = useState<WorkflowFile[]>([]);
+  const [workflowMappings, setWorkflowMappings] = useState<FileMapping[]>([]);
+  const [mappingModalFile, setMappingModalFile] = useState<WorkflowFile | null>(null);
+  const [workflowInputFile, setWorkflowInputFile] = useState<WorkflowFile | null>(null);
+  const [filesMetadata, setFilesMetadata] = useState<Record<string, MetaData>>({});
+  const [workflowError, setWorkflowError] = useState<string | null>(null);
+
   const { startBatch, batchData, currentBatchId, stopBatch } = useBatch()
+
+  const {
+    createWorkflow,
+    stopWorkflow,
+    workflowData,
+    activeWorkflowId,
+    isLoading: workflowLoading,
+    error: workflowHookError,
+    isCreating,
+    isStopping,
+  } = useWorkflow();
 
   const progress = batchData ? (batchData.total > 0 ? (batchData.completed / batchData.total) * 100 : 0) : 0;
 
