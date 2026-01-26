@@ -8,6 +8,8 @@ export interface BatchRequest {
   batch_id: string;
   inputs: Record<string, any>[];
   output_dir: string;
+  export_pdf: boolean;
+  export_mcdx: boolean;
 }
 
 export interface InputConfig {
@@ -19,8 +21,10 @@ export interface InputConfig {
 export interface BatchRow {
   row: number;
   status: string;
+  stage?: string;
   data?: Record<string, any>;
   pdf?: string;
+  mcdx?: string;
   error?: string;
 }
 
@@ -30,6 +34,7 @@ export interface BatchStatus {
   completed: number;
   status: string;
   results: BatchRow[];
+  generated_files?: string[];
   error?: string;
 }
 
@@ -66,6 +71,9 @@ export interface WorkflowConfig {
   files: WorkflowFile[];
   mappings: FileMapping[];
   stop_on_error: boolean;
+  export_pdf: boolean;
+  export_mcdx: boolean;
+  output_dir?: string;
 }
 
 export type WorkflowStatus =
@@ -130,6 +138,11 @@ export const getWorkflowStatus = async (workflowId: string): Promise<WorkflowSta
 
 export const stopWorkflow = async (workflowId: string): Promise<ControlResponse> => {
   const { data } = await api.post<ControlResponse>(`/workflows/${workflowId}/stop`);
+  return data;
+};
+
+export const openFile = async (path: string): Promise<{ status: string }> => {
+  const { data } = await api.post<{ status: string }>('/files/open', { path });
   return data;
 };
 
