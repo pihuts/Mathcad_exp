@@ -111,13 +111,16 @@ class WorkflowManager:
         return inputs
 
     def _poll_result(self, job_id: str, timeout: float = 30.0) -> Optional[Any]:
-        """Poll EngineManager for job completion (reuse BatchManager pattern)"""
+        """
+        Poll EngineManager for job completion. Since MathcadPy operations are synchronous
+        and execute in the worker process, results appear quickly. Use short polling interval.
+        """
         start = time.time()
         while time.time() - start < timeout:
             res = self.engine.get_job(job_id)
             if res:
                 return res
-            time.sleep(0.5)
+            time.sleep(0.1)  # Reduced from 0.5s - faster response since operations are synchronous
         return None
 
     def get_status(self, workflow_id: str) -> Optional[Dict[str, Any]]:
