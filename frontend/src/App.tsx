@@ -388,31 +388,32 @@ function App() {
           </Tabs>
         </Container>
       </AppShell.Main>
-
-      <InputModal
-        opened={opened}
-        onClose={close}
-        alias={selectedAlias || ''}
-        onSave={(values) => handleSaveAliasConfig(selectedAlias!, values)}
-      />
-
-      <MappingModal
-        opened={!!mappingModalFile}
-        onClose={() => setMappingModalFile(null)}
-        targetFile={mappingModalFile || { file_path: '', inputs: [], position: 0 }}
-        allFiles={workflowFiles}
-        filesMetadata={filesMetadata}
-        currentMappings={workflowMappings.filter(m => m.target_file === mappingModalFile?.file_path)}
-        onSave={handleSaveMappings}
-      />
-
-      <InputModal
-        opened={!!workflowInputFile}
-        onClose={() => setWorkflowInputFile(null)}
-        alias={workflowInputFile?.inputs[0]?.alias || ''}
-        onSave={(values) => handleSaveWorkflowInputs(workflowInputFile?.inputs[0]?.alias || '', values)}
-      />
     </AppShell>
+
+    {/* Modals must be outside AppShell for proper overlay rendering */}
+    <InputModal
+      opened={opened}
+      onClose={close}
+      alias={selectedAlias || ''}
+      onSave={(values) => handleSaveAliasConfig(selectedAlias!, values)}
+    />
+
+    <MappingModal
+      opened={!!mappingModalFile}
+      onClose={() => setMappingModalFile(null)}
+      targetFile={mappingModalFile || { file_path: '', inputs: [], position: 0 }}
+      allFiles={workflowFiles}
+      filesMetadata={filesMetadata}
+      currentMappings={workflowMappings.filter(m => m.target_file === mappingModalFile?.file_path)}
+      onSave={handleSaveMappings}
+    />
+
+    <InputModal
+      opened={!!workflowInputFile}
+      onClose={() => setWorkflowInputFile(null)}
+      alias={workflowInputFile?.inputs[0]?.alias || ''}
+      onSave={(values) => handleSaveWorkflowInputs(workflowInputFile?.inputs[0]?.alias || '', values)}
+    />
   )
 }
 
