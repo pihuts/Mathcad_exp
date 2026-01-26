@@ -10,20 +10,57 @@ interface BatchGridProps {
 
 const StatusRenderer = (params: any) => {
   const status = params.value;
+  const stage = params.data.stage;
+
   let color = 'gray';
-  if (status === 'done') color = 'green';
-  if (status === 'running') color = 'blue';
-  if (status === 'error') color = 'red';
+  let text = status;
+
+  if (status === 'success') color = 'green';
+  if (status === 'running') {
+    color = 'blue';
+    if (stage) text = stage; // Show granular status
+  }
+  if (status === 'failed') color = 'red';
   if (status === 'pending') color = 'yellow';
-  
-  return <Badge color={color} variant="filled">{status}</Badge>;
+
+  return <Badge color={color} variant="filled">{text}</Badge>;
+}
+
+const PdfRenderer = (params: any) => {
+  const pdfPath = params.value;
+  if (!pdfPath) return null;
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    import('../services/api').then(({ openFile }) => openFile(pdfPath));
+  };
+
+  return (
+    <Badge
+      color="blue"
+      variant="light"
+      component="a"
+      href="#"
+      onClick={handleClick}
+      style={{ cursor: 'pointer' }}
+    >
+      View PDF
+    </Badge>
+  );
 }
 
 export const BatchGrid = ({ data }: BatchGridProps) => {
   const columnDefs = useMemo<ColDef[]>(() => {
     const baseCols: ColDef[] = [
       { field: 'row', headerName: 'Row', width: 80, pinned: 'left' },
-      { field: 'status', headerName: 'Status', width: 120, cellRenderer: StatusRenderer, pinned: 'left' },
+      { field: 'status', headerName: 'Status', width: 200, cellRenderer: StatusRenderer, pinned: 'left' },
+      {
+        field: 'pdf',
+        headerName: 'Export',
+        width: 120,
+        cellRenderer: PdfRenderer,
+        pinned: 'right'
+      },
     ];
 
     if (data && data.length > 0) {
@@ -42,7 +79,15 @@ export const BatchGrid = ({ data }: BatchGridProps) => {
       }
     }
 
-    baseCols.push({ field: 'error', headerName: 'Error', flex: 2, minWidth: 200 });
+    baseCols.push({
+      field: 'error',
+      headerName: 'Error',
+      flex: 2,
+      minWidth: 200,
+      wrapText: true,
+      autoHeight: true,
+      cellStyle: { whiteSpace: 'normal', color: 'red' }
+    });
 
     return baseCols;
   }, [data]);

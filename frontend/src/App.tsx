@@ -1,4 +1,4 @@
-import { AppShell, Title, Container, Button, Group, Stack, Progress, Text, Table, Badge, ActionIcon, Alert, Tabs, Paper } from '@mantine/core'
+import { AppShell, Title, Container, Button, Group, Stack, Progress, Text, Table, Badge, ActionIcon, Alert, Tabs, Paper, Checkbox } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { IconSettings, IconAlertCircle, IconFile } from '@tabler/icons-react'
 import { useState, useMemo } from 'react'
@@ -6,6 +6,8 @@ import { BatchGrid } from './components/BatchGrid'
 import { InputModal } from './components/InputModal'
 import { WorkflowBuilder } from './components/WorkflowBuilder'
 import { MappingModal } from './components/MappingModal'
+import { BisayaStatus } from './components/BisayaStatus'
+import { ResultsList } from './components/ResultsList'
 import { useBatch } from './hooks/useBatch'
 import { useWorkflow } from './hooks/useWorkflow'
 import { getInputs, browseFile } from './services/api'
@@ -22,6 +24,8 @@ function App() {
   const [selectedAlias, setSelectedAlias] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [exportPdf, setExportPdf] = useState(true);
+  const [exportMcdx, setExportMcdx] = useState(false);
 
   // Workflow state
   const [activeTab, setActiveTab] = useState<string | null>('batch');
@@ -31,6 +35,8 @@ function App() {
   const [workflowInputFile, setWorkflowInputFile] = useState<WorkflowFile | null>(null);
   const [filesMetadata, setFilesMetadata] = useState<Record<string, MetaData>>({});
   const [workflowError, setWorkflowError] = useState<string | null>(null);
+  const [workflowExportPdf, setWorkflowExportPdf] = useState(true);
+  const [workflowExportMcdx, setWorkflowExportMcdx] = useState(false);
 
   const { startBatch, batchData, currentBatchId, stopBatch } = useBatch()
 
@@ -117,6 +123,8 @@ function App() {
       files: workflowFiles,
       mappings: workflowMappings,
       stop_on_error: true,
+      export_pdf: workflowExportPdf,
+      export_mcdx: workflowExportMcdx,
     };
 
     createWorkflow(workflowConfig);
@@ -188,7 +196,9 @@ function App() {
     startBatch({
       batch_id: `batch-${Date.now()}`,
       inputs,
-      output_dir: "D:\\Mathcad_exp\\results"
+      output_dir: "D:\\Mathcad_exp\\results",
+      export_pdf: exportPdf,
+      export_mcdx: exportMcdx,
     });
   }
 
@@ -293,13 +303,28 @@ function App() {
                         <Text size="sm" fw={500}>
                           Total Iterations: {iterationCount}
                         </Text>
-                        <Button
-                          disabled={iterationCount === 0}
-                          onClick={handleRun}
-                          loading={batchData?.status === 'running'}
-                        >
-                          Run Batch
-                        </Button>
+                        <Group gap="xl">
+                          <Group gap="xs">
+                            <Text size="sm" fw={500}>Export:</Text>
+                            <Checkbox
+                              label="PDF"
+                              checked={exportPdf}
+                              onChange={(e) => setExportPdf(e.currentTarget.checked)}
+                            />
+                            <Checkbox
+                              label="MCDX"
+                              checked={exportMcdx}
+                              onChange={(e) => setExportMcdx(e.currentTarget.checked)}
+                            />
+                          </Group>
+                          <Button
+                            disabled={iterationCount === 0}
+                            onClick={handleRun}
+                            loading={batchData?.status === 'running'}
+                          >
+                            Run Batch
+                          </Button>
+                        </Group>
                       </Group>
                     </Stack>
                   )}
@@ -315,7 +340,13 @@ function App() {
                           )}
                         </Group>
                       </Group>
+
                       <Progress value={progress} animated={batchData.status === 'running'} />
+                      <BisayaStatus status={batchData.status} />
+                      <ResultsList
+                        files={batchData.generated_files || []}
+                        outputDir="D:\\Mathcad_exp\\results"
+                      />
                       <BatchGrid data={batchData?.results} />
                     </Stack>
                   )}
@@ -344,7 +375,20 @@ function App() {
                     onConfigureInputs={handleConfigureWorkflowInputs}
                   />
 
-                  <Group justify="flex-end">
+                  <Group justify="space-between" align="center">
+                    <Group gap="xs">
+                      <Text size="sm" fw={500}>Export Options:</Text>
+                      <Checkbox
+                        label="Save as PDF"
+                        checked={workflowExportPdf}
+                        onChange={(e) => setWorkflowExportPdf(e.currentTarget.checked)}
+                      />
+                      <Checkbox
+                        label="Save as MCDX"
+                        checked={workflowExportMcdx}
+                        onChange={(e) => setWorkflowExportMcdx(e.currentTarget.checked)}
+                      />
+                    </Group>
                     <Button
                       disabled={workflowFiles.length === 0 || workflowFiles.some(f => !f.file_path)}
                       onClick={handleRunWorkflow}
@@ -403,17 +447,18 @@ function App() {
             </Tabs>
           </Container>
         </AppShell.Main>
-      </AppShell>
+      </AppShell >
 
       {/* Modals must be outside AppShell for proper overlay rendering */}
-      <InputModal
+      < InputModal
         opened={opened}
         onClose={close}
-        alias={selectedAlias || ''}
+        alias={selectedAlias || ''
+        }
         onSave={(values) => handleSaveAliasConfig(selectedAlias!, values)}
       />
 
-      <MappingModal
+      < MappingModal
         opened={!!mappingModalFile}
         onClose={() => setMappingModalFile(null)}
         targetFile={mappingModalFile || { file_path: '', inputs: [], position: 0 }}
