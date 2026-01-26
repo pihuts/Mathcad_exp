@@ -10,7 +10,7 @@ import { useBatch } from './hooks/useBatch'
 import { useWorkflow } from './hooks/useWorkflow'
 import { getInputs } from './services/api'
 import { generateCartesian } from './utils/generators'
-import { WorkflowFile, FileMapping, MetaData, WorkflowConfig, WorkflowStatus } from './services/api'
+import { WorkflowFile, FileMapping, MetaData, WorkflowConfig, WorkflowStatus, InputConfig } from './services/api'
 
 function App() {
   const [opened, { open, close }] = useDisclosure(false)
@@ -45,6 +45,84 @@ function App() {
   } = useWorkflow();
 
   const progress = batchData ? (batchData.total > 0 ? (batchData.completed / batchData.total) * 100 : 0) : 0;
+
+  // Workflow handler functions
+  const handleOpenMappingModal = (file: WorkflowFile) => {
+    setMappingModalFile(file);
+  };
+
+  const handleSaveMappings = (mappings: FileMapping[]) => {
+    if (mappingModalFile) {
+      // Remove old mappings for this file and add new ones
+      const otherMappings = workflowMappings.filter(
+        (m) => m.target_file !== mappingModalFile.file_path
+      );
+      setWorkflowMappings([...otherMappings, ...mappings]);
+    }
+    setMappingModalFile(null);
+  };
+
+  const handleConfigureWorkflowInputs = async (file: WorkflowFile) => {
+    if (!file.file_path) return;
+
+    try {
+      const meta = await getInputs(file.file_path);
+      setFilesMetadata(prev => ({
+        ...prev,
+        [file.file_path]: meta,
+      }));
+      setWorkflowInputFile(file);
+    } catch (err: any) {
+      console.error("Failed to analyze file", err);
+    }
+  };
+
+  const handleSaveWorkflowInputs = (alias: string, config: any) => {
+    // Handle InputConfig object {alias, value, units} from InputModal
+    const values = Array.isArray(config) ? config : config.value;
+    const units = Array.isArray(config) ? undefined : config.units;
+
+    if (workflowInputFile) {
+      const newFiles = [...workflowFiles];
+      const fileIndex = newFiles.findIndex(f => f.file_path === workflowInputFile.file_path);
+
+      if (fileIndex >= 0) {
+        // Create InputConfig for the alias
+        const inputConfig: InputConfig = {
+          alias,
+          value: Array.isArray(values) ? values[0] : values,
+          units,
+        };
+
+        // Replace or add input config for this alias
+        const existingIndex = newFiles[fileIndex].inputs.findIndex(i => i.alias === alias);
+        if (existingIndex >= 0) {
+          newFiles[fileIndex].inputs[existingIndex] = inputConfig;
+        } else {
+          newFiles[fileIndex].inputs.push(inputConfig);
+        }
+
+        setWorkflowFiles(newFiles);
+      }
+    }
+
+    setWorkflowInputFile(null);
+  };
+
+  const handleRunWorkflow = () => {
+    if (workflowFiles.length === 0) return;
+
+    const workflowConfig: WorkflowConfig = {
+      name: `workflow-${Date.now()}`,
+      files: workflowFiles,
+      mappings: workflowMappings,
+      stop_on_error: true,
+    };
+
+    createWorkflow(workflowConfig);
+  };
+
+  const workflowProgress = workflowData ? workflowData.progress : 0;
 
   const handleAnalyze = async () => {
     setError(null);
