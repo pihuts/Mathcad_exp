@@ -10,7 +10,8 @@ import { useBatch } from './hooks/useBatch'
 import { useWorkflow } from './hooks/useWorkflow'
 import { getInputs } from './services/api'
 import { generateCartesian } from './utils/generators'
-import { WorkflowFile, FileMapping, MetaData, WorkflowConfig, WorkflowStatus, InputConfig } from './services/api'
+import type { WorkflowFile, FileMapping, MetaData, WorkflowConfig, InputConfig } from './services/api'
+import { WorkflowStatus } from './services/api'
 
 function App() {
   const [opened, { open, close }] = useDisclosure(false)
@@ -39,7 +40,6 @@ function App() {
     workflowData,
     activeWorkflowId,
     isLoading: workflowLoading,
-    error: workflowHookError,
     isCreating,
     isStopping,
   } = useWorkflow();
@@ -333,7 +333,7 @@ function App() {
                   <Button
                     disabled={workflowFiles.length === 0 || workflowFiles.some(f => !f.file_path)}
                     onClick={handleRunWorkflow}
-                    loading={isCreating || (activeWorkflowId && workflowLoading)}
+                    loading={isCreating || (!!activeWorkflowId && workflowLoading)}
                   >
                     Run Workflow
                   </Button>

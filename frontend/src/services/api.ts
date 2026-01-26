@@ -68,13 +68,20 @@ export interface WorkflowConfig {
   stop_on_error: boolean;
 }
 
-export enum WorkflowStatus {
-  PENDING = "pending",
-  RUNNING = "running",
-  COMPLETED = "completed",
-  FAILED = "failed",
-  STOPPED = "stopped",
-}
+export type WorkflowStatus =
+  | "pending"
+  | "running"
+  | "completed"
+  | "failed"
+  | "stopped";
+
+export const WorkflowStatus = {
+  PENDING: "pending" as WorkflowStatus,
+  RUNNING: "running" as WorkflowStatus,
+  COMPLETED: "completed" as WorkflowStatus,
+  FAILED: "failed" as WorkflowStatus,
+  STOPPED: "stopped" as WorkflowStatus,
+} as const;
 
 export interface WorkflowStatusResponse {
   workflow_id: string;

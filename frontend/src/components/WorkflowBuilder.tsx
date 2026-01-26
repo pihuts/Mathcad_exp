@@ -1,7 +1,7 @@
 import {
   Stack, Paper, Text, Button, Group, Badge, ActionIcon, TextInput,
 } from '@mantine/core';
-import { IconGripVertical, IconTrash, IconPlus, IconSettings } from '@tabler/icons-react';
+import { IconTrash, IconPlus, IconSettings } from '@tabler/icons-react';
 import {
   DragDropContext,
   Draggable,
@@ -121,13 +121,6 @@ export const WorkflowBuilder = ({
                     >
                       <Group justify="space-between">
                         <Group gap="xs">
-                          <ActionIcon
-                            variant="subtle"
-                            style={{ cursor: 'grab' }}
-                            {...provided.dragHandleProps}
-                          >
-                            <IconGripVertical size={18} />
-                          </ActionIcon>
                           <Badge size="xs" color="blue">
                             {index + 1}
                           </Badge>

@@ -4,10 +4,9 @@ import {
   createWorkflow,
   getWorkflowStatus,
   stopWorkflow,
-  WorkflowConfig,
-  WorkflowStatusResponse,
   WorkflowStatus,
 } from '../services/api';
+import type { WorkflowConfig } from '../services/api';
 
 export const useWorkflow = () => {
   const queryClient = useQueryClient();
@@ -18,12 +17,8 @@ export const useWorkflow = () => {
   const { data: workflowData, isLoading } = useQuery({
     queryKey: ['workflow', activeWorkflowId],
     queryFn: () => getWorkflowStatus(activeWorkflowId!),
-    enabled: !!activeWorkflowId && (
-      !workflowData?.status ||
-      workflowData.status === WorkflowStatus.PENDING ||
-      workflowData.status === WorkflowStatus.RUNNING
-    ),
-    refetchInterval: 1000, // Poll every second
+    enabled: !!activeWorkflowId,
+    refetchInterval: 1000,
     retry: false,
   });
 
