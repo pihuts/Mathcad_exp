@@ -1,6 +1,6 @@
-import { AppShell, Title, Container, Button, Group, Stack, Progress, Text, TextInput, Table, Badge, ActionIcon, Alert, Tabs, Paper } from '@mantine/core'
+import { AppShell, Title, Container, Button, Group, Stack, Progress, Text, Table, Badge, ActionIcon, Alert, Tabs, Paper } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { IconSettings, IconAlertCircle } from '@tabler/icons-react'
+import { IconSettings, IconAlertCircle, IconFile } from '@tabler/icons-react'
 import { useState, useMemo } from 'react'
 import { BatchGrid } from './components/BatchGrid'
 import { InputModal } from './components/InputModal'
@@ -8,7 +8,7 @@ import { WorkflowBuilder } from './components/WorkflowBuilder'
 import { MappingModal } from './components/MappingModal'
 import { useBatch } from './hooks/useBatch'
 import { useWorkflow } from './hooks/useWorkflow'
-import { getInputs } from './services/api'
+import { getInputs, browseFile } from './services/api'
 import { generateCartesian } from './utils/generators'
 import type { WorkflowFile, FileMapping, MetaData, WorkflowConfig, InputConfig } from './services/api'
 import { WorkflowStatus } from './services/api'
@@ -198,223 +198,237 @@ function App() {
         header={{ height: 60 }}
         padding="md"
       >
-      <AppShell.Header p="md">
-        <Group justify="space-between" h="100%">
-          <Title order={3}>Mathcad Automator - Batch Processor</Title>
-          {currentBatchId && (
-            <Text size="sm" c="dimmed">Active Batch: {currentBatchId}</Text>
-          )}
-        </Group>
-      </AppShell.Header>
+        <AppShell.Header p="md">
+          <Group justify="space-between" h="100%">
+            <Title order={3}>Mathcad Automator - Batch Processor</Title>
+            {currentBatchId && (
+              <Text size="sm" c="dimmed">Active Batch: {currentBatchId}</Text>
+            )}
+          </Group>
+        </AppShell.Header>
 
-      <AppShell.Main>
-        <Container size="xl">
-          <Tabs value={activeTab} onChange={setActiveTab}>
-            <Tabs.List>
-              <Tabs.Tab value="batch">Batch Processing</Tabs.Tab>
-              <Tabs.Tab value="workflow">Workflow Orchestration</Tabs.Tab>
-            </Tabs.List>
+        <AppShell.Main>
+          <Container size="xl">
+            <Tabs value={activeTab} onChange={setActiveTab}>
+              <Tabs.List>
+                <Tabs.Tab value="batch">Batch Processing</Tabs.Tab>
+                <Tabs.Tab value="workflow">Workflow Orchestration</Tabs.Tab>
+              </Tabs.List>
 
-            <Tabs.Panel value="batch">
-              <Stack gap="xl">
-                {error && (
-                  <Alert icon={<IconAlertCircle size={16} />} title="Error" color="red" withCloseButton onClose={() => setError(null)}>
-                    {error}
-                  </Alert>
-                )}
-                <Group align="flex-end">
-                  <TextInput
-                    label="Mathcad File Path"
-                    placeholder="C:\path\to\file.mcdx"
-                    value={filePath}
-                    onChange={(e) => setFilePath(e.currentTarget.value)}
-                    style={{ flex: 1 }}
-                  />
-                  <Button
-                    onClick={handleAnalyze}
-                    loading={isAnalyzing}
-                    disabled={isAnalyzing || !filePath}
-                  >
-                    Analyze File
-                  </Button>
-                </Group>
+              <Tabs.Panel value="batch">
+                <Stack gap="xl">
+                  {error && (
+                    <Alert icon={<IconAlertCircle size={16} />} title="Error" color="red" withCloseButton onClose={() => setError(null)}>
+                      {error}
+                    </Alert>
+                  )}
+                  <Group align="flex-end">
+                    <Stack gap="xs" style={{ flex: 1 }}>
+                      <Text size="sm" fw={500}>Mathcad File Path</Text>
+                      <Group gap="xs">
+                        <Button
+                          leftSection={<IconFile size={16} />}
+                          onClick={async () => {
+                            const result = await browseFile();
+                            if (!result.cancelled && result.file_path) {
+                              setFilePath(result.file_path);
+                            }
+                          }}
+                        >
+                          Browse
+                        </Button>
+                        {filePath && (
+                          <Text size="sm" c="dimmed" truncate style={{ flex: 1 }} title={filePath}>
+                            {filePath.split('\\').pop()}
+                          </Text>
+                        )}
+                      </Group>
+                    </Stack>
+                    <Button
+                      onClick={handleAnalyze}
+                      loading={isAnalyzing}
+                      disabled={isAnalyzing || !filePath}
+                    >
+                      Analyze File
+                    </Button>
+                  </Group>
 
-                {aliases.length > 0 && (
-                  <Stack gap="xs">
-                    <Title order={5}>Input Aliases</Title>
-                    <Table>
-                      <Table.Thead>
-                        <Table.Tr>
-                          <Table.Th>Alias</Table.Th>
-                          <Table.Th>Name</Table.Th>
-                          <Table.Th>Configuration</Table.Th>
-                          <Table.Th style={{ width: 100 }}>Action</Table.Th>
-                        </Table.Tr>
-                      </Table.Thead>
-                      <Table.Tbody>
-                        {aliases.map((a) => (
-                          <Table.Tr key={a.alias}>
-                            <Table.Td>{a.alias}</Table.Td>
-                            <Table.Td>{a.name}</Table.Td>
-                            <Table.Td>
-                              {aliasConfigs[a.alias] ? (
-                                <Badge color="blue" variant="light">
-                                  {aliasConfigs[a.alias].length} values
-                                </Badge>
-                              ) : (
-                                <Badge color="gray" variant="dot">Single Value (Default)</Badge>
-                              )}
-                            </Table.Td>
-                            <Table.Td>
-                              <ActionIcon variant="light" onClick={() => handleConfigureAlias(a.alias)}>
-                                <IconSettings size={18} />
-                              </ActionIcon>
-                            </Table.Td>
+                  {aliases.length > 0 && (
+                    <Stack gap="xs">
+                      <Title order={5}>Input Aliases</Title>
+                      <Table>
+                        <Table.Thead>
+                          <Table.Tr>
+                            <Table.Th>Alias</Table.Th>
+                            <Table.Th>Name</Table.Th>
+                            <Table.Th>Configuration</Table.Th>
+                            <Table.Th style={{ width: 100 }}>Action</Table.Th>
                           </Table.Tr>
-                        ))}
-                      </Table.Tbody>
-                    </Table>
+                        </Table.Thead>
+                        <Table.Tbody>
+                          {aliases.map((a) => (
+                            <Table.Tr key={a.alias}>
+                              <Table.Td>{a.alias}</Table.Td>
+                              <Table.Td>{a.name}</Table.Td>
+                              <Table.Td>
+                                {aliasConfigs[a.alias] ? (
+                                  <Badge color="blue" variant="light">
+                                    {aliasConfigs[a.alias].length} values
+                                  </Badge>
+                                ) : (
+                                  <Badge color="gray" variant="dot">Single Value (Default)</Badge>
+                                )}
+                              </Table.Td>
+                              <Table.Td>
+                                <ActionIcon variant="light" onClick={() => handleConfigureAlias(a.alias)}>
+                                  <IconSettings size={18} />
+                                </ActionIcon>
+                              </Table.Td>
+                            </Table.Tr>
+                          ))}
+                        </Table.Tbody>
+                      </Table>
 
-                    <Group justify="space-between" mt="md">
-                      <Text size="sm" fw={500}>
-                        Total Iterations: {iterationCount}
-                      </Text>
-                      <Button
-                        disabled={iterationCount === 0}
-                        onClick={handleRun}
-                        loading={batchData?.status === 'running'}
-                      >
-                        Run Batch
-                      </Button>
-                    </Group>
-                  </Stack>
-                )}
-
-                {batchData && (
-                  <Stack gap="xs">
-                    <Group justify="space-between">
-                      <Title order={4}>Batch Progress</Title>
-                      <Group>
-                        <Text size="sm">Progress: {batchData.completed} / {batchData.total}</Text>
-                        {batchData.status === 'running' && (
-                          <Button color="red" variant="light" size="xs" onClick={() => stopBatch(currentBatchId!)}>Stop Batch</Button>
-                        )}
-                      </Group>
-                    </Group>
-                    <Progress value={progress} animated={batchData.status === 'running'} />
-                    <BatchGrid data={batchData?.results} />
-                  </Stack>
-                )}
-              </Stack>
-            </Tabs.Panel>
-
-            <Tabs.Panel value="workflow">
-              <Stack gap="xl">
-                <Title order={3}>Workflow Orchestration</Title>
-                <Text size="sm" c="dimmed">
-                  Chain multiple Mathcad files where outputs drive downstream inputs. Files execute in order (top to bottom).
-                </Text>
-
-                {workflowError && (
-                  <Alert icon={<IconAlertCircle size={16} />} title="Error" color="red" withCloseButton onClose={() => setWorkflowError(null)}>
-                    {workflowError}
-                  </Alert>
-                )}
-
-                <WorkflowBuilder
-                  files={workflowFiles}
-                  mappings={workflowMappings}
-                  onFilesChange={setWorkflowFiles}
-                  onMappingsChange={setWorkflowMappings}
-                  onOpenMappingModal={handleOpenMappingModal}
-                  onConfigureInputs={handleConfigureWorkflowInputs}
-                />
-
-                <Group justify="flex-end">
-                  <Button
-                    disabled={workflowFiles.length === 0 || workflowFiles.some(f => !f.file_path)}
-                    onClick={handleRunWorkflow}
-                    loading={isCreating || (!!activeWorkflowId && workflowLoading)}
-                  >
-                    Run Workflow
-                  </Button>
-                </Group>
-
-                {activeWorkflowId && (
-                  <Stack gap="xs">
-                    <Group justify="space-between">
-                      <Title order={4}>Workflow Progress</Title>
-                      <Group>
-                        <Text size="sm">
-                          Status: {workflowData?.status?.toUpperCase() || 'RUNNING'}
+                      <Group justify="space-between" mt="md">
+                        <Text size="sm" fw={500}>
+                          Total Iterations: {iterationCount}
                         </Text>
-                        {workflowData?.status === WorkflowStatus.RUNNING && (
-                          <Button color="red" variant="light" size="xs" onClick={stopWorkflow} loading={isStopping}>
-                            Stop Workflow
-                          </Button>
-                        )}
+                        <Button
+                          disabled={iterationCount === 0}
+                          onClick={handleRun}
+                          loading={batchData?.status === 'running'}
+                        >
+                          Run Batch
+                        </Button>
                       </Group>
-                    </Group>
-                    <Progress value={workflowProgress} animated={workflowData?.status === WorkflowStatus.RUNNING} />
+                    </Stack>
+                  )}
 
-                    {workflowData && (
-                      <Stack gap="xs" mt="md">
+                  {batchData && (
+                    <Stack gap="xs">
+                      <Group justify="space-between">
+                        <Title order={4}>Batch Progress</Title>
                         <Group>
-                          <Text size="sm">Current File: {workflowData.current_file_index + 1} / {workflowData.total_files}</Text>
-                          <Text size="sm">Completed: {workflowData.completed_files.length}</Text>
+                          <Text size="sm">Progress: {batchData.completed} / {batchData.total}</Text>
+                          {batchData.status === 'running' && (
+                            <Button color="red" variant="light" size="xs" onClick={() => stopBatch(currentBatchId!)}>Stop Batch</Button>
+                          )}
                         </Group>
+                      </Group>
+                      <Progress value={progress} animated={batchData.status === 'running'} />
+                      <BatchGrid data={batchData?.results} />
+                    </Stack>
+                  )}
+                </Stack>
+              </Tabs.Panel>
 
-                        {workflowData.completed_files.length > 0 && (
-                          <Paper p="md" withBorder>
-                            <Text fw={500} mb="xs">Completed Files:</Text>
-                            <Stack gap="xs">
-                              {workflowData.completed_files.map((file, idx) => (
-                                <Text key={idx} size="sm">{idx + 1}. {file}</Text>
-                              ))}
-                            </Stack>
-                          </Paper>
-                        )}
+              <Tabs.Panel value="workflow">
+                <Stack gap="xl">
+                  <Title order={3}>Workflow Orchestration</Title>
+                  <Text size="sm" c="dimmed">
+                    Chain multiple Mathcad files where outputs drive downstream inputs. Files execute in order (top to bottom).
+                  </Text>
 
-                        {workflowData.status === WorkflowStatus.FAILED && workflowData.error && (
-                          <Alert color="red">
-                            <Text size="sm">Error: {workflowData.error}</Text>
-                          </Alert>
-                        )}
-                      </Stack>
-                    )}
-                  </Stack>
-                )}
-              </Stack>
-            </Tabs.Panel>
-          </Tabs>
-        </Container>
-      </AppShell.Main>
-    </AppShell>
+                  {workflowError && (
+                    <Alert icon={<IconAlertCircle size={16} />} title="Error" color="red" withCloseButton onClose={() => setWorkflowError(null)}>
+                      {workflowError}
+                    </Alert>
+                  )}
 
-    {/* Modals must be outside AppShell for proper overlay rendering */}
-    <InputModal
-      opened={opened}
-      onClose={close}
-      alias={selectedAlias || ''}
-      onSave={(values) => handleSaveAliasConfig(selectedAlias!, values)}
-    />
+                  <WorkflowBuilder
+                    files={workflowFiles}
+                    mappings={workflowMappings}
+                    onFilesChange={setWorkflowFiles}
+                    onMappingsChange={setWorkflowMappings}
+                    onOpenMappingModal={handleOpenMappingModal}
+                    onConfigureInputs={handleConfigureWorkflowInputs}
+                  />
 
-    <MappingModal
-      opened={!!mappingModalFile}
-      onClose={() => setMappingModalFile(null)}
-      targetFile={mappingModalFile || { file_path: '', inputs: [], position: 0 }}
-      allFiles={workflowFiles}
-      filesMetadata={filesMetadata}
-      currentMappings={workflowMappings.filter(m => m.target_file === mappingModalFile?.file_path)}
-      onSave={handleSaveMappings}
-    />
+                  <Group justify="flex-end">
+                    <Button
+                      disabled={workflowFiles.length === 0 || workflowFiles.some(f => !f.file_path)}
+                      onClick={handleRunWorkflow}
+                      loading={isCreating || (!!activeWorkflowId && workflowLoading)}
+                    >
+                      Run Workflow
+                    </Button>
+                  </Group>
 
-    <InputModal
-      opened={!!workflowInputFile}
-      onClose={() => setWorkflowInputFile(null)}
-      alias={workflowInputFile?.inputs[0]?.alias || ''}
-      onSave={(values) => handleSaveWorkflowInputs(workflowInputFile?.inputs[0]?.alias || '', values)}
-    />
+                  {activeWorkflowId && (
+                    <Stack gap="xs">
+                      <Group justify="space-between">
+                        <Title order={4}>Workflow Progress</Title>
+                        <Group>
+                          <Text size="sm">
+                            Status: {workflowData?.status?.toUpperCase() || 'RUNNING'}
+                          </Text>
+                          {workflowData?.status === WorkflowStatus.RUNNING && (
+                            <Button color="red" variant="light" size="xs" onClick={stopWorkflow} loading={isStopping}>
+                              Stop Workflow
+                            </Button>
+                          )}
+                        </Group>
+                      </Group>
+                      <Progress value={workflowProgress} animated={workflowData?.status === WorkflowStatus.RUNNING} />
+
+                      {workflowData && (
+                        <Stack gap="xs" mt="md">
+                          <Group>
+                            <Text size="sm">Current File: {workflowData.current_file_index + 1} / {workflowData.total_files}</Text>
+                            <Text size="sm">Completed: {workflowData.completed_files.length}</Text>
+                          </Group>
+
+                          {workflowData.completed_files.length > 0 && (
+                            <Paper p="md" withBorder>
+                              <Text fw={500} mb="xs">Completed Files:</Text>
+                              <Stack gap="xs">
+                                {workflowData.completed_files.map((file, idx) => (
+                                  <Text key={idx} size="sm">{idx + 1}. {file}</Text>
+                                ))}
+                              </Stack>
+                            </Paper>
+                          )}
+
+                          {workflowData.status === WorkflowStatus.FAILED && workflowData.error && (
+                            <Alert color="red">
+                              <Text size="sm">Error: {workflowData.error}</Text>
+                            </Alert>
+                          )}
+                        </Stack>
+                      )}
+                    </Stack>
+                  )}
+                </Stack>
+              </Tabs.Panel>
+            </Tabs>
+          </Container>
+        </AppShell.Main>
+      </AppShell>
+
+      {/* Modals must be outside AppShell for proper overlay rendering */}
+      <InputModal
+        opened={opened}
+        onClose={close}
+        alias={selectedAlias || ''}
+        onSave={(values) => handleSaveAliasConfig(selectedAlias!, values)}
+      />
+
+      <MappingModal
+        opened={!!mappingModalFile}
+        onClose={() => setMappingModalFile(null)}
+        targetFile={mappingModalFile || { file_path: '', inputs: [], position: 0 }}
+        allFiles={workflowFiles}
+        filesMetadata={filesMetadata}
+        currentMappings={workflowMappings.filter(m => m.target_file === mappingModalFile?.file_path)}
+        onSave={handleSaveMappings}
+      />
+
+      <InputModal
+        opened={!!workflowInputFile}
+        onClose={() => setWorkflowInputFile(null)}
+        alias={workflowInputFile?.inputs[0]?.alias || ''}
+        onSave={(values) => handleSaveWorkflowInputs(workflowInputFile?.inputs[0]?.alias || '', values)}
+      />
     </>
   )
 }

@@ -1,14 +1,14 @@
 import {
-  Stack, Paper, Text, Button, Group, Badge, ActionIcon, TextInput,
+  Stack, Paper, Text, Button, Group, Badge, ActionIcon,
 } from '@mantine/core';
-import { IconTrash, IconPlus, IconSettings } from '@tabler/icons-react';
+import { IconTrash, IconPlus, IconSettings, IconFile } from '@tabler/icons-react';
 import {
   DragDropContext,
   Draggable,
   Droppable,
   type DropResult,
 } from '@hello-pangea/dnd';
-import type { WorkflowFile, FileMapping } from '../services/api';
+import { browseFile, type WorkflowFile, type FileMapping } from '../services/api';
 
 interface WorkflowBuilderProps {
   files: WorkflowFile[];
@@ -26,7 +26,7 @@ export const WorkflowBuilder = ({
   onMappingsChange,
   onOpenMappingModal,
   onConfigureInputs,
-  }: WorkflowBuilderProps) => {
+}: WorkflowBuilderProps) => {
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) {
       return;
@@ -36,7 +36,7 @@ export const WorkflowBuilder = ({
 
     // If dropped in the same position, do nothing
     if (source.droppableId === destination.droppableId &&
-        source.index === destination.index) {
+      source.index === destination.index) {
       return;
     }
 
@@ -120,17 +120,30 @@ export const WorkflowBuilder = ({
                       }}
                     >
                       <Group justify="space-between">
-                        <Group gap="xs">
+                        <Group gap="xs" style={{ flex: 1, minWidth: 0 }}>
                           <Badge size="xs" color="blue">
                             {index + 1}
                           </Badge>
-                          <TextInput
+                          <Button
                             size="xs"
-                            placeholder="C:\\path\\to\\file.mcdx"
-                            value={file.file_path}
-                            onChange={(e) => handleUpdateFilePath(index, e.currentTarget.value)}
-                            style={{ flex: 1 }}
-                          />
+                            variant="light"
+                            leftSection={<IconFile size={14} />}
+                            onClick={async () => {
+                              const result = await browseFile();
+                              if (!result.cancelled && result.file_path) {
+                                handleUpdateFilePath(index, result.file_path);
+                              }
+                            }}
+                          >
+                            Browse
+                          </Button>
+                          {file.file_path ? (
+                            <Text size="xs" c="dimmed" truncate style={{ flex: 1 }} title={file.file_path}>
+                              {file.file_path.split('\\').pop()}
+                            </Text>
+                          ) : (
+                            <Text size="xs" c="dimmed" style={{ flex: 1 }}>No file selected</Text>
+                          )}
                         </Group>
 
                         <Group gap="xs">

@@ -44,8 +44,8 @@ export interface JobResponse {
 }
 
 export interface MetaData {
-  inputs: Array<{alias: string, name: string}>;
-  outputs: Array<{alias: string, name: string}>;
+  inputs: Array<{ alias: string, name: string }>;
+  outputs: Array<{ alias: string, name: string }>;
 }
 
 export interface FileMapping {
@@ -130,6 +130,11 @@ export const getWorkflowStatus = async (workflowId: string): Promise<WorkflowSta
 
 export const stopWorkflow = async (workflowId: string): Promise<ControlResponse> => {
   const { data } = await api.post<ControlResponse>(`/workflows/${workflowId}/stop`);
+  return data;
+};
+
+export const browseFile = async (): Promise<{ file_path: string | null; cancelled: boolean }> => {
+  const { data } = await api.post<{ file_path: string | null; cancelled: boolean }>('/files/browse');
   return data;
 };
 
