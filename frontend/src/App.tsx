@@ -1,4 +1,4 @@
-import { AppShell, Title, Container, Button, Group, Stack, Progress, Text, TextInput, Table, Badge, ActionIcon, Alert, Tabs } from '@mantine/core'
+import { AppShell, Title, Container, Button, Group, Stack, Progress, Text, TextInput, Table, Badge, ActionIcon, Alert, Tabs, Paper } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { IconSettings, IconAlertCircle } from '@tabler/icons-react'
 import { useState, useMemo } from 'react'
@@ -355,6 +355,32 @@ function App() {
                       </Group>
                     </Group>
                     <Progress value={workflowProgress} animated={workflowData?.status === WorkflowStatus.RUNNING} />
+
+                    {workflowData && (
+                      <Stack gap="xs" mt="md">
+                        <Group>
+                          <Text size="sm">Current File: {workflowData.current_file_index + 1} / {workflowData.total_files}</Text>
+                          <Text size="sm">Completed: {workflowData.completed_files.length}</Text>
+                        </Group>
+
+                        {workflowData.completed_files.length > 0 && (
+                          <Paper p="md" withBorder>
+                            <Text fw={500} mb="xs">Completed Files:</Text>
+                            <Stack gap="xs">
+                              {workflowData.completed_files.map((file, idx) => (
+                                <Text key={idx} size="sm">{idx + 1}. {file}</Text>
+                              ))}
+                            </Stack>
+                          </Paper>
+                        )}
+
+                        {workflowData.status === WorkflowStatus.FAILED && workflowData.error && (
+                          <Alert color="red">
+                            <Text size="sm">Error: {workflowData.error}</Text>
+                          </Alert>
+                        )}
+                      </Stack>
+                    )}
                   </Stack>
                 )}
               </Stack>
@@ -363,11 +389,28 @@ function App() {
         </Container>
       </AppShell.Main>
 
-      <InputModal 
-        opened={opened} 
-        onClose={close} 
+      <InputModal
+        opened={opened}
+        onClose={close}
         alias={selectedAlias || ''}
-        onSave={(values) => handleSaveAliasConfig(selectedAlias!, values)} 
+        onSave={(values) => handleSaveAliasConfig(selectedAlias!, values)}
+      />
+
+      <MappingModal
+        opened={!!mappingModalFile}
+        onClose={() => setMappingModalFile(null)}
+        targetFile={mappingModalFile || { file_path: '', inputs: [], position: 0 }}
+        allFiles={workflowFiles}
+        filesMetadata={filesMetadata}
+        currentMappings={workflowMappings.filter(m => m.target_file === mappingModalFile?.file_path)}
+        onSave={handleSaveMappings}
+      />
+
+      <InputModal
+        opened={!!workflowInputFile}
+        onClose={() => setWorkflowInputFile(null)}
+        alias={workflowInputFile?.inputs[0]?.alias || ''}
+        onSave={(values) => handleSaveWorkflowInputs(workflowInputFile?.inputs[0]?.alias || '', values)}
       />
     </AppShell>
   )
