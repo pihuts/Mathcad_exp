@@ -1,10 +1,14 @@
-import { useState } from 'react';
-import { DndContext, DragEndEvent, DragOverlay, closestCenter } from '@hello-pangea/dnd';
 import {
   Stack, Paper, Text, Button, Group, Badge, ActionIcon, TextInput,
 } from '@mantine/core';
 import { IconGripVertical, IconTrash, IconPlus, IconSettings } from '@tabler/icons-react';
-import { WorkflowFile, FileMapping, MetaData } from '../services/api';
+import {
+  DragDropContext,
+  Draggable,
+  Droppable,
+  type DropResult,
+} from '@hello-pangea/dnd';
+import type { WorkflowFile, FileMapping } from '../services/api';
 
 interface WorkflowBuilderProps {
   files: WorkflowFile[];
@@ -22,24 +26,28 @@ export const WorkflowBuilder = ({
   onMappingsChange,
   onOpenMappingModal,
   onConfigureInputs,
-}: WorkflowBuilderProps) => {
-  const [activeId, setActiveId] = useState<string | null>(null);
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (over && active.id !== over.id) {
-      const oldIndex = files.findIndex((f) => f.file_path === active.id);
-      const newIndex = files.findIndex((f) => f.file_path === over.id);
-
-      const newFiles = [...files];
-      const [removed] = newFiles.splice(oldIndex, 1);
-      newFiles.splice(newIndex, 0, removed);
-
-      // Update positions
-      const updatedFiles = newFiles.map((f, idx) => ({ ...f, position: idx }));
-      onFilesChange(updatedFiles);
+  }: WorkflowBuilderProps) => {
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) {
+      return;
     }
-    setActiveId(null);
+
+    const { source, destination } = result;
+
+    // If dropped in the same position, do nothing
+    if (source.droppableId === destination.droppableId &&
+        source.index === destination.index) {
+      return;
+    }
+
+    // Reorder files array
+    const newFiles = [...files];
+    const [removed] = newFiles.splice(source.index, 1);
+    newFiles.splice(destination.index, 0, removed);
+
+    // Update positions
+    const updatedFiles = newFiles.map((f, idx) => ({ ...f, position: idx }));
+    onFilesChange(updatedFiles);
   };
 
   const handleAddFile = () => {
@@ -84,85 +92,97 @@ export const WorkflowBuilder = ({
         </Button>
       </Group>
 
-      <DndContext
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <Stack gap="xs">
-          {files.map((file, index) => (
-            <Paper
-              key={file.file_path || `new-${index}`}
-              p="md"
-              withBorder
-              style={{ cursor: 'grab' }}
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable droppableId="workflow-files">
+          {(provided, snapshot) => (
+            <Stack
+              {...provided.droppableProps}
+              ref={provided.innerRef}
+              gap="xs"
+              style={{ minHeight: snapshot.isDraggingOver ? 200 : 'auto' }}
             >
-              <Group justify="space-between">
-                <Group gap="xs">
-                  <ActionIcon
-                    variant="subtle"
-                    style={{ cursor: 'grab' }}
-                    onPointerDown={(e) => e.preventDefault()}
-                  >
-                    <IconGripVertical size={18} />
-                  </ActionIcon>
-                  <Badge size="xs" color="blue">
-                    {index + 1}
-                  </Badge>
-                  <TextInput
-                    size="xs"
-                    placeholder="C:\\path\\to\\file.mcdx"
-                    value={file.file_path}
-                    onChange={(e) => handleUpdateFilePath(index, e.currentTarget.value)}
-                    style={{ flex: 1 }}
-                  />
-                </Group>
+              {files.map((file, index) => (
+                <Draggable
+                  key={file.file_path || `new-${index}`}
+                  draggableId={file.file_path || `new-${index}`}
+                  index={index}
+                >
+                  {(provided, snapshot) => (
+                    <Paper
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      p="md"
+                      withBorder
+                      style={{
+                        ...provided.draggableProps.style,
+                        cursor: 'grab',
+                        opacity: snapshot.isDragging ? 0.5 : 1,
+                      }}
+                    >
+                      <Group justify="space-between">
+                        <Group gap="xs">
+                          <ActionIcon
+                            variant="subtle"
+                            style={{ cursor: 'grab' }}
+                            {...provided.dragHandleProps}
+                          >
+                            <IconGripVertical size={18} />
+                          </ActionIcon>
+                          <Badge size="xs" color="blue">
+                            {index + 1}
+                          </Badge>
+                          <TextInput
+                            size="xs"
+                            placeholder="C:\\path\\to\\file.mcdx"
+                            value={file.file_path}
+                            onChange={(e) => handleUpdateFilePath(index, e.currentTarget.value)}
+                            style={{ flex: 1 }}
+                          />
+                        </Group>
 
-                <Group gap="xs">
-                  {getMappingsForFile(file.file_path).length > 0 && (
-                    <Badge size="xs" color="green" variant="dot">
-                      {getMappingsForFile(file.file_path).length} mapping{getMappingsForFile(file.file_path).length > 1 ? 's' : ''}
-                    </Badge>
+                        <Group gap="xs">
+                          {getMappingsForFile(file.file_path).length > 0 && (
+                            <Badge size="xs" color="green" variant="dot">
+                              {getMappingsForFile(file.file_path).length} mapping{getMappingsForFile(file.file_path).length > 1 ? 's' : ''}
+                            </Badge>
+                          )}
+                          <ActionIcon
+                            size="xs"
+                            variant="light"
+                            color="blue"
+                            onClick={() => onConfigureInputs(file)}
+                            disabled={!file.file_path}
+                          >
+                            <IconSettings size={16} />
+                          </ActionIcon>
+                          <ActionIcon
+                            size="xs"
+                            variant="light"
+                            color="green"
+                            onClick={() => onOpenMappingModal(file)}
+                            disabled={!file.file_path}
+                          >
+                            <IconPlus size={16} />
+                          </ActionIcon>
+                          <ActionIcon
+                            size="xs"
+                            variant="light"
+                            color="red"
+                            onClick={() => handleRemoveFile(file.file_path)}
+                          >
+                            <IconTrash size={16} />
+                          </ActionIcon>
+                        </Group>
+                      </Group>
+                    </Paper>
                   )}
-                  <ActionIcon
-                    size="xs"
-                    variant="light"
-                    color="blue"
-                    onClick={() => onConfigureInputs(file)}
-                    disabled={!file.file_path}
-                  >
-                    <IconSettings size={16} />
-                  </ActionIcon>
-                  <ActionIcon
-                    size="xs"
-                    variant="light"
-                    color="green"
-                    onClick={() => onOpenMappingModal(file)}
-                    disabled={!file.file_path}
-                  >
-                    <IconPlus size={16} />
-                  </ActionIcon>
-                  <ActionIcon
-                    size="xs"
-                    variant="light"
-                    color="red"
-                    onClick={() => handleRemoveFile(file.file_path)}
-                  >
-                    <IconTrash size={16} />
-                  </ActionIcon>
-                </Group>
-              </Group>
-            </Paper>
-          ))}
-        </Stack>
-
-        <DragOverlay>
-          {activeId ? (
-            <Paper p="md" withBorder shadow="sm">
-              <Text>{activeId}</Text>
-            </Paper>
-          ) : null}
-        </DragOverlay>
-      </DndContext>
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </Stack>
+          )}
+        </Droppable>
+      </DragDropContext>
     </Stack>
   );
 };
