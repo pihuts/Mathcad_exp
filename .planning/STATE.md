@@ -7,9 +7,9 @@
 
 **Phase:** 3.2 - Export Options (MCDX/PDF) (In Progress)
 **Status:** Active
-**Last activity:** 2026-01-27 - Completed Plan 03.2-02 (Export UI checkboxes).
+**Last activity:** 2026-01-27 - Completed Plan 03.2-01 (Backend export models and logic).
 
-Progress: ████████████████ 100% (25/25 plans complete)
+Progress: ████████████████ 89% (24/27 plans complete)
 
 | Phase | Goal | Status |
 |-------|------|--------|
@@ -31,7 +31,12 @@ Progress: ████████████████ 100% (25/25 plans com
 - **Risk:** None currently.
 
 ### Recent Decisions
-- **Export Format Selection:** Added checkboxes for PDF and MCDX export in both Batch and Workflow tabs. Default: PDF enabled, MCDX disabled.
+- **Dynamic File Naming:** Batch exports use `BaseName_ParamName-Value` pattern; Workflow exports use `WorkflowName_StepN_FileName` pattern for traceability.
+- **Export Options Defaults:** PDF enabled by default, MCDX disabled by default for both batch and workflow operations.
+- **Filename Sanitization:** Replace invalid Windows filename characters with underscore to prevent file system errors.
+- **Delete Before Export:** Remove existing files before save_as to avoid Mathcad overwrite prompts that would hang automation.
+- **Raw COM SaveAs:** Use raw COM ws_object.SaveAs(str(path)) instead of MathcadPy wrapper for reliable export.
+- **Export Format Selection:** Added checkboxes for PDF and MCDX export in both Batch and Workflow tabs.
 - **Checkboxes Over Radio Buttons:** Allow simultaneous export in both formats for maximum flexibility.
 - **ResultsList Component:** Displays generated files newest-first with one-click native opening via backend API.
 - **Native File Dialog:** Implemented `_open_file_dialog` in backend (`tkinter` running in `asyncio.to_thread`) to bypass browser security restrictions on file paths.
@@ -57,15 +62,17 @@ Progress: ████████████████ 100% (25/25 plans com
 ## Session Continuity
 
 **Session:** 2026-01-27 - Present
-**Stopped at:** Completed Plan 03.2-02
+**Stopped at:** Completed Plan 03.2-01
 **Resume file:** None
 
 ### Last Session
-- Executed Plan 03.2-02 (Frontend export UI).
-- Added export checkboxes to Batch and Workflow tabs.
-- Created ResultsList and BisayaStatus components.
-- Updated BatchGrid for native file opening.
+- Executed Plan 03.2-01 (Backend export options).
+- Added export_pdf and export_mcdx flags to models and schemas.
+- Implemented conditional export logic in BatchManager and WorkflowManager.
+- Added dynamic file naming with parameter values.
+- Enhanced worker save_as for reliable COM export.
 
 ### Next Steps
-1. **Next:** Plan 03.2-03 - Verification testing (if exists)
-2. Or proceed to next feature phase.
+1. **Next:** Verify Plan 03.2-02 (Frontend export UI) is complete
+2. Then Plan 03.2-03 - Verification testing
+3. Or proceed to next feature phase.
