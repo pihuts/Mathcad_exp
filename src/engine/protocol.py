@@ -56,6 +56,9 @@ class WorkflowConfig(BaseModel):
     files: List[WorkflowFile]
     mappings: List[FileMapping]  # Links files together
     stop_on_error: bool = True  # Stop entire chain on failure
+    export_pdf: bool = True
+    export_mcdx: bool = False
+    output_dir: Optional[str] = None
 
 
 class WorkflowStatus(str, Enum):
