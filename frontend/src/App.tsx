@@ -193,10 +193,11 @@ function App() {
   }
 
   return (
-    <AppShell
-      header={{ height: 60 }}
-      padding="md"
-    >
+    <>
+      <AppShell
+        header={{ height: 60 }}
+        padding="md"
+      >
       <AppShell.Header p="md">
         <Group justify="space-between" h="100%">
           <Title order={3}>Mathcad Automator - Batch Processor</Title>
@@ -414,6 +415,7 @@ function App() {
       alias={workflowInputFile?.inputs[0]?.alias || ''}
       onSave={(values) => handleSaveWorkflowInputs(workflowInputFile?.inputs[0]?.alias || '', values)}
     />
+    </>
   )
 }
 
