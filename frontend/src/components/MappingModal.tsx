@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Modal, Stack, Select, Button, Text, Group, ActionIcon, Alert, Paper } from '@mantine/core';
+import { Modal, Stack, Select, Button, Text, Group, ActionIcon, Alert, Paper, ScrollArea } from '@mantine/core';
 import { IconTrash, IconPlus } from '@tabler/icons-react';
 import type { FileMapping, WorkflowFile, MetaData } from '../services/api';
 
@@ -78,10 +78,10 @@ export const MappingModal = ({
   const hasDuplicates = new Set(targetAliasesUsed).size !== targetAliasesUsed.length;
 
   return (
-    <Modal opened={opened} onClose={onClose} title={`Configure Mappings: ${targetFile.file_path || 'New File'}`} size="lg">
+    <Modal opened={opened} onClose={onClose} title={`Configure Mappings`} size="xl">
       <Stack gap="md">
-        <Text size="sm" c="dimmed">
-          Map outputs from upstream files to inputs in this file. Data flows from source → target during workflow execution.
+        <Text size="sm" fw={500} truncate="end" title={targetFile.file_path || 'New File'}>
+          File: {targetFile.file_path || 'New File'}
         </Text>
 
         {upstreamFiles.length === 0 && (
@@ -90,7 +90,10 @@ export const MappingModal = ({
           </Alert>
         )}
 
-        {mappings.map((mapping, idx) => (
+        <ScrollArea.Autosize type="always" mah={300}>
+          <Stack gap="xs">
+            {mappings.map((mapping, idx) => (
+              <Paper key={idx} p="md" withBorder>
           <Paper key={idx} p="md" withBorder>
             <Group gap="xs" align="flex-start">
               <Stack style={{ flex: 1 }}>
@@ -131,7 +134,9 @@ export const MappingModal = ({
               </ActionIcon>
             </Group>
           </Paper>
-        ))}
+            ))}
+          </Stack>
+        </ScrollArea.Autosize>
 
         <Group justify="flex-end">
           <Button
