@@ -39,6 +39,7 @@ Progress: ████████████░░ 64% (14/22 plans complete)
 - **Dual-Format Input Support:** Batch manager supports both new structured format ({"L": {"value": 10, "units": "ft"}}) and legacy simple dict ({"L": 10, "P": 5}) for gradual migration.
 - **Frontend InputConfig Interface:** TypeScript interface mirroring backend dataclass with alias, value, and optional units fields for type safety across frontend.
 - **Workflow Data Models:** Added FileMapping, WorkflowFile, WorkflowConfig (Pydantic BaseModels) for type-safe workflow configuration. Uses linear chain via position field (0,1,2 for A→B→C) and explicit mapping via FileMapping (source_alias→target_alias).
+- **Workflow API:** Added 4 REST endpoints (POST /workflows, POST /workflows/{id}/start, GET /workflows/{id}, POST /workflows/{id}/stop) using manager.workflow_manager dependency. Auto-start on submit, time-based ID generation.
 
 ### Roadmap Evolution
 - Phase 2.1 inserted after Phase 2: MathcadPy Migration (COMPLETED) - Replaced fragile COM implementation with stable MathcadPy library
