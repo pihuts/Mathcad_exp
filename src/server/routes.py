@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from typing import Dict, Any, Optional
 import time
 import asyncio
+import os
 from .dependencies import get_engine_manager
 from src.engine.manager import EngineManager
 from .schemas import JobSubmission, JobResponse, ControlResponse, BatchRequest, BatchStatus
@@ -171,7 +172,6 @@ async def open_file_natively(payload: Dict[str, Any]):
         raise HTTPException(status_code=400, detail="Invalid or missing path")
     
     try:
-        import os
         # Use startfile on Windows, open on Mac, xdg-open on Linux
         if hasattr(os, 'startfile'):
             os.startfile(path)
