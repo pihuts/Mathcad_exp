@@ -60,6 +60,26 @@ class WorkflowManager:
 
                 state.current_file_index += 1
 
+                # Export if requested
+                if state.config.export_pdf or state.config.export_mcdx:
+                    output_dir = state.config.output_dir or "results"
+                    if not os.path.exists(output_dir):
+                        os.makedirs(output_dir, exist_ok=True)
+                    
+                    base_name = os.path.splitext(os.path.basename(file_config.file_path))[0]
+                    # Format: WorkflowName_Step1_FileName
+                    filename_base = f"{state.config.name}_Step{state.current_file_index}_{base_name}"
+                    
+                    if state.config.export_pdf:
+                        save_path = os.path.abspath(os.path.join(output_dir, f"{filename_base}.pdf"))
+                        save_job_id = self.engine.submit_job("save_as", {"path": save_path, "format": 3})
+                        self._poll_result(save_job_id) # Wait for export to finish
+                    
+                    if state.config.export_mcdx:
+                        save_path = os.path.abspath(os.path.join(output_dir, f"{filename_base}.mcdx"))
+                        save_job_id = self.engine.submit_job("save_as", {"path": save_path, "format": 0})
+                        self._poll_result(save_job_id)
+
             except Exception as e:
                 state.status = WorkflowStatus.FAILED
                 state.error = str(e)
