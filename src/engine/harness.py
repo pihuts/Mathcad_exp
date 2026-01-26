@@ -108,6 +108,8 @@ def run_harness(input_queue: multiprocessing.Queue, output_queue: multiprocessin
                     path = job.payload.get("path")
                     inputs_config = job.payload.get("inputs", [])  # Array of InputConfig objects
 
+                    # Performance optimization: open_file now skips reopening if same file already open
+                    # If operations fail, they'll raise exceptions and caller can retry with force_reopen
                     if path:
                         worker.open_file(path)
 
@@ -127,7 +129,7 @@ def run_harness(input_queue: multiprocessing.Queue, output_queue: multiprocessin
                         if alias and value is not None:
                             worker.set_input(alias, value, units)
 
-                    # Recalculate worksheet
+                    # Recalculate worksheet (synchronous - blocks until complete)
                     worker.synchronize()
 
                     # Fetch all outputs

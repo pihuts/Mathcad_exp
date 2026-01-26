@@ -6,6 +6,7 @@ class MathcadWorker:
     def __init__(self):
         self.mc = None  # Mathcad() instance
         self.worksheet = None  # Worksheet() instance
+        self.current_file_path = None  # Track currently open file to avoid unnecessary reopening
         # COM initialization is handled internally by MathcadPy
 
     def connect(self) -> bool:
@@ -34,7 +35,11 @@ class MathcadWorker:
             # COM connection is dead
             return False
 
-    def open_file(self, path: str):
+    def open_file(self, path: str, force_reopen: bool = False):
+        """
+        Open a Mathcad file. If the same file is already open, skip reopening unless force_reopen=True.
+        This optimization significantly improves batch processing performance.
+        """
         # Check if connection is alive, reconnect if necessary
         if not self.is_connected():
             print("Mathcad connection lost, reconnecting...")
@@ -44,9 +49,14 @@ class MathcadWorker:
         if not abs_path.exists():
             raise FileNotFoundError(f"File not found: {abs_path}")
 
+        # Performance optimization: Skip reopening if same file is already open
+        if not force_reopen and self.current_file_path == str(abs_path):
+            return  # File already open, skip reopening
+
         try:
             self.worksheet = self.mc.open(abs_path)
             self.worksheet.activate()
+            self.current_file_path = str(abs_path)  # Track opened file
         except Exception as e:
             raise Exception(f"Failed to open file {abs_path}: {str(e)}")
 
