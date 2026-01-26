@@ -14,6 +14,7 @@ if parent_dir not in sys.path:
 
 from engine.protocol import JobRequest, JobResult
 from engine.harness import run_harness
+from engine.workflow_manager import WorkflowManager
 
 class EngineManager:
     def __init__(self):
@@ -28,6 +29,9 @@ class EngineManager:
         
         from engine.batch_manager import BatchManager
         self.batch_manager = BatchManager(self)
+
+        from engine.workflow_manager import WorkflowManager
+        self.workflow_manager = WorkflowManager(self)
         
     def start_engine(self):
         """Starts the sidecar process and result collector."""
