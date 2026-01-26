@@ -1,0 +1,163 @@
+import { useState } from 'react';
+import { Modal, Stack, Select, Button, Text, Group, ActionIcon, Alert, Paper } from '@mantine/core';
+import { IconTrash, IconPlus } from '@tabler/icons-react';
+import type { FileMapping, WorkflowFile, MetaData } from '../services/api';
+
+interface MappingModalProps {
+  opened: boolean;
+  onClose: () => void;
+  targetFile: WorkflowFile;
+  allFiles: WorkflowFile[];
+  filesMetadata: Record<string, MetaData>;  // file_path -> {inputs, outputs}
+  currentMappings: FileMapping[];
+  onSave: (mappings: FileMapping[]) => void;
+}
+
+export const MappingModal = ({
+  opened,
+  onClose,
+  targetFile,
+  allFiles,
+  filesMetadata,
+  currentMappings,
+  onSave,
+}: MappingModalProps) => {
+  const [mappings, setMappings] = useState<FileMapping[]>(currentMappings);
+
+  const addMapping = () => {
+    const newMapping: FileMapping = {
+      source_file: '',
+      source_alias: '',
+      target_file: targetFile.file_path,
+      target_alias: '',
+    };
+    setMappings([...mappings, newMapping]);
+  };
+
+  const removeMapping = (index: number) => {
+    const newMappings = mappings.filter((_, i) => i !== index);
+    setMappings(newMappings);
+  };
+
+  const updateMapping = (index: number, field: keyof FileMapping, value: string) => {
+    const newMappings = [...mappings];
+    newMappings[index] = { ...newMappings[index], [field]: value };
+    setMappings(newMappings);
+  };
+
+  const handleSave = () => {
+    // Filter out incomplete mappings
+    const validMappings = mappings.filter(
+      (m) => m.source_file && m.source_alias && m.target_alias
+    );
+    onSave(validMappings);
+    onClose();
+  };
+
+  // Get upstream files (files before target in chain)
+  const targetIndex = allFiles.findIndex((f) => f.file_path === targetFile.file_path);
+  const upstreamFiles = targetIndex > 0 ? allFiles.slice(0, targetIndex) : [];
+
+  // Build source options: file_path -> outputs
+  const sourceOptions = upstreamFiles.map((f) => ({
+    group: f.file_path || `File ${f.position}`,
+    items: (filesMetadata[f.file_path]?.outputs || []).map((o) => ({
+      value: `${f.file_path}|${o.alias}`,
+      label: `${o.alias}`,
+    })),
+  }));
+
+  // Get target input options
+  const targetInputOptions = (filesMetadata[targetFile.file_path]?.inputs || []).map((i) => ({
+    value: i.alias,
+    label: i.alias,
+  }));
+
+  // Check for duplicate target aliases
+  const targetAliasesUsed = mappings.map((m) => m.target_alias);
+  const hasDuplicates = new Set(targetAliasesUsed).size !== targetAliasesUsed.length;
+
+  return (
+    <Modal opened={opened} onClose={onClose} title={`Configure Mappings: ${targetFile.file_path || 'New File'}`} size="lg">
+      <Stack gap="md">
+        <Text size="sm" c="dimmed">
+          Map outputs from upstream files to inputs in this file. Data flows from source → target during workflow execution.
+        </Text>
+
+        {upstreamFiles.length === 0 && (
+          <Alert color="yellow">
+            <Text size="sm">No upstream files available. Add files before this one in the workflow chain to create mappings.</Text>
+          </Alert>
+        )}
+
+        {mappings.map((mapping, idx) => (
+          <Paper key={idx} p="md" withBorder>
+            <Group gap="xs" align="flex-start">
+              <Stack style={{ flex: 1 }}>
+                <Select
+                  label="Source File → Output"
+                  placeholder="Select source and output"
+                  searchable
+                  data={sourceOptions}
+                  value={mapping.source_file && mapping.source_alias ? `${mapping.source_file}|${mapping.source_alias}` : ''}
+                  onChange={(value) => {
+                    if (value) {
+                      const [source_file, source_alias] = value.split('|');
+                      updateMapping(idx, 'source_file', source_file);
+                      updateMapping(idx, 'source_alias', source_alias);
+                    }
+                  }}
+                  disabled={upstreamFiles.length === 0}
+                />
+
+                <Select
+                  label="Target Input"
+                  placeholder="Select target input"
+                  searchable
+                  data={targetInputOptions}
+                  value={mapping.target_alias}
+                  onChange={(value) => updateMapping(idx, 'target_alias', value || '')}
+                  disabled={!targetFile.file_path}
+                />
+              </Stack>
+
+              <ActionIcon
+                color="red"
+                variant="light"
+                onClick={() => removeMapping(idx)}
+                mt="lg"
+              >
+                <IconTrash size={18} />
+              </ActionIcon>
+            </Group>
+          </Paper>
+        ))}
+
+        <Group justify="flex-end">
+          <Button
+            leftSection={<IconPlus size={14} />}
+            onClick={addMapping}
+            disabled={upstreamFiles.length === 0}
+          >
+            Add Mapping
+          </Button>
+        </Group>
+
+        {hasDuplicates && (
+          <Alert color="red">
+            <Text size="sm">Duplicate target inputs detected. Each input can only be mapped once.</Text>
+          </Alert>
+        )}
+
+        <Group justify="flex-end">
+          <Button variant="light" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={hasDuplicates}>
+            Save Mappings
+          </Button>
+        </Group>
+      </Stack>
+    </Modal>
+  );
+};
