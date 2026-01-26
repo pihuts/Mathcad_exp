@@ -61,42 +61,79 @@ async def stop_batch(batch_id: str, manager: EngineManager = Depends(get_engine_
 async def analyze_file(payload: Dict[str, Any], manager: EngineManager = Depends(get_engine_manager)):
     if not manager.is_running():
         raise HTTPException(status_code=503, detail="Engine is not running")
-    
+
     path = payload.get("path")
     if not path:
         raise HTTPException(status_code=400, detail="Missing 'path' in payload")
-        
+
     try:
         # We'll use a blocking wait for this simple analysis
         job_id = manager.submit_job("get_metadata", {"path": path})
-        
-        # Poll for result (max 10 seconds)
+
+        # Poll for result (max 60 seconds - Mathcad launch can be slow)
         start_time = time.time()
-        while time.time() - start_time < 10:
+        while time.time() - start_time < 60:
             result = manager.get_job(job_id)
             if result:
                 if result.status == "success":
                     return result.data
                 else:
-                    raise HTTPException(status_code=500, detail=result.error_message)
+                    msg = result.error_message or "Unknown error"
+                    if "No worksheet open" in msg or "Mathcad not connected" in msg:
+                        msg += " (Ensure Mathcad Prime is installed and the file path is correct)"
+                    raise HTTPException(status_code=500, detail=msg)
             time.sleep(0.5)
-            
-        raise HTTPException(status_code=504, detail="Analysis timed out")
+
+        raise HTTPException(status_code=504, detail="Analysis timed out (Mathcad took too long to respond)")
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/control/browse")
-def browse_file():
-    import tkinter as tk
-    from tkinter import filedialog
-    root = tk.Tk()
-    root.withdraw()
-    root.attributes("-topmost", True)
-    file_path = filedialog.askopenfilename(
-        title="Select Mathcad File",
-        filetypes=[("Mathcad Prime Files", "*.mcdx"), ("All Files", "*.*")]
-    )
-    root.destroy()
-    return {"path": file_path}
+# Workflow Endpoints
+
+@router.post("/workflows")
+async def create_workflow(req: Dict[str, Any], manager: EngineManager = Depends(get_engine_manager)):
+    """Create and start a workflow from configuration"""
+    if not manager.is_running():
+        raise HTTPException(status_code=503, detail="Engine is not running")
+
+    try:
+        # Parse workflow config from request
+        from src.engine.protocol import WorkflowConfig
+        config = WorkflowConfig(**req)
+
+        # Generate workflow ID
+        workflow_id = f"workflow-{int(time.time())}"
+
+        # Submit workflow
+        manager.workflow_manager.submit_workflow(workflow_id, config)
+
+        return {"workflow_id": workflow_id, "status": "submitted"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/workflows/{workflow_id}/start")
+async def start_workflow(workflow_id: str, manager: EngineManager = Depends(get_engine_manager)):
+    """Start a workflow (alias for create - workflows auto-start on submit)"""
+    status = manager.workflow_manager.get_status(workflow_id)
+    if not status:
+        raise HTTPException(status_code=404, detail=f"Workflow {workflow_id} not found")
+
+    return {"workflow_id": workflow_id, "status": status["status"]}
+
+@router.get("/workflows/{workflow_id}")
+async def get_workflow_status(workflow_id: str, manager: EngineManager = Depends(get_engine_manager)):
+    """Get current workflow status"""
+    status = manager.workflow_manager.get_status(workflow_id)
+    if not status:
+        raise HTTPException(status_code=404, detail=f"Workflow {workflow_id} not found")
+
+    return status
+
+@router.post("/workflows/{workflow_id}/stop")
+async def stop_workflow(workflow_id: str, manager: EngineManager = Depends(get_engine_manager)):
+    """Stop a running workflow"""
+    manager.workflow_manager.stop_workflow(workflow_id)
+    return {"workflow_id": workflow_id, "status": "stopped"}
+
