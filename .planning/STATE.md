@@ -6,11 +6,11 @@
 ## Current Position
 
 **Phase:** 3.0 - Workflow Orchestration
-**Plan:** 3 of 8 in current phase
+**Plan:** 6 of 8 in current phase
 **Status:** In progress
-**Last activity:** 2026-01-26 - Added workflow API endpoints to routes.py.
+**Last activity:** 2026-01-26 - Created MappingModal component for output-to-input mapping configuration.
 
-Progress: ████████████░░ 64% (14/22 plans complete)
+Progress: ████████████░░ 68% (15/22 plans complete)
 
 | Phase | Goal | Status |
 |-------|------|--------|
@@ -18,15 +18,15 @@ Progress: ████████████░░ 64% (14/22 plans complete)
 | 2. Batch Processing | Parameter studies & Output generation | Complete |
 | **2.1 MathcadPy Migration** | **Replace COM with MathcadPy library** | **Complete** |
 | **2.2 Input Units Specification** | **Add option to specify units for inputs** | **Complete** |
-| 3. Workflow | Multi-file chaining | In Progress (1/8) |
+| 3. Workflow | Multi-file chaining | In Progress (6/8) |
 | 4. Library | Configuration persistence | Pending |
 | 5. Packaging | Standalone distribution | Pending |
 
 ## Context & Memory
 
 ### Active Context
-- **Focus:** Workflow API endpoints for frontend integration.
-- **Architecture:** REST API endpoints using manager.workflow_manager dependency, following batch endpoint patterns.
+- **Focus:** MappingModal component for explicit output-to-input file mapping configuration.
+- **Architecture:** Modal UI pattern with grouped Select options, duplicate validation disabling save button.
 
 ### Recent Decisions
 - **MathcadPrime.Application:** Switched to this ProgID as it is the registered one in the environment.
@@ -40,6 +40,7 @@ Progress: ████████████░░ 64% (14/22 plans complete)
 - **Frontend InputConfig Interface:** TypeScript interface mirroring backend dataclass with alias, value, and optional units fields for type safety across frontend.
 - **Workflow Data Models:** Added FileMapping, WorkflowFile, WorkflowConfig (Pydantic BaseModels) for type-safe workflow configuration. Uses linear chain via position field (0,1,2 for A→B→C) and explicit mapping via FileMapping (source_alias→target_alias).
 - **Workflow API:** Added 4 REST endpoints (POST /workflows, POST /workflows/{id}/start, GET /workflows/{id}, POST /workflows/{id}/stop) using manager.workflow_manager dependency. Auto-start on submit, time-based ID generation.
+- **MappingModal UI:** Modal component for creating FileMapping objects with grouped source selection (upstream files → outputs), target input selection, duplicate detection, add/remove functionality.
 
 ### Roadmap Evolution
 - Phase 2.1 inserted after Phase 2: MathcadPy Migration (COMPLETED) - Replaced fragile COM implementation with stable MathcadPy library
@@ -47,21 +48,22 @@ Progress: ████████████░░ 64% (14/22 plans complete)
 - Phase 3: Workflow Orchestration (In Progress) - Multi-file chaining with explicit output-to-input mapping
 
 ### Performance Metrics
-- **Requirements Covered:** 100% (Phase 1), 100% (Phase 2), 13% (Phase 3)
+- **Requirements Covered:** 100% (Phase 1), 100% (Phase 2), 75% (Phase 3)
 - **Orphans:** 0
 - **Known Gaps:** Parallel execution (deferred to v2).
 
 ## Session Continuity
 
 ### Last Session
-- Completed Phase 3 Plan 01: Workflow Data Models.
-- Added FileMapping Pydantic BaseModel for output-to-input mapping
-- Added WorkflowFile Pydantic BaseModel with file_path, inputs, position fields
-- Added WorkflowConfig Pydantic BaseModel with name, files, mappings, stop_on_error
-- Added WorkflowStatus Enum (PENDING, RUNNING, COMPLETED, FAILED, STOPPED)
-- Added WorkflowState dataclass for runtime execution tracking
-- WorkflowFile reuses existing InputConfig type for inputs field
+- Completed Phase 3 Plan 06: MappingModal Component.
+- Created MappingModal component for output-to-input file mapping
+- Grouped source selection showing upstream files and their outputs
+- Target input selection displaying inputs for target file
+- Duplicate detection prevents invalid mappings (same target input multiple times)
+- Add/remove mapping functionality for flexible configuration
+- Fixed missing imports (Paper, IconPlus) and removed unused imports (IconX, IconArrowRight)
+- Fixed type-only imports for FileMapping, WorkflowFile, MetaData
 
 ### Next Steps
-1. **Next:** Phase 3 Plan 02 - Workflow Execution Engine
-2. Then: Continue workflow orchestration plans
+1. **Next:** Phase 3 Plan 07 - Next plan in workflow orchestration
+2. Then: Complete remaining workflow orchestration plans
