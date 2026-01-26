@@ -71,8 +71,9 @@ Each task was committed atomically:
 
 1. **Task 1: Install @hello-pangea/dnd library** - `dde65ce` (chore)
 2. **Task 2: Create WorkflowBuilder component** - `fb9a9ab` (feat - from plan 03-02)
+3. **Bug fix: Correct @hello-pangea/dnd API** - `1ce543b` (fix)
 
-**Plan metadata:** None (component pre-existing)
+**Plan metadata:** `e0deca5` (docs: complete plan) + `1ce543b` (bug fix)
 
 _Note: Task 2 was completed in plan 03-02, identical to this plan's specification._
 
@@ -99,10 +100,19 @@ _Note: Task 2 was completed in plan 03-02, identical to this plan's specificatio
 - **Verification:** Package installation successful, no 404 errors
 - **Committed in:** dde65ce (Task 1 commit)
 
+**2. [Rule 1 - Bug] Incorrect @hello-pangea/dnd API usage in WorkflowBuilder**
+
+- **Found during:** Verification (post-summary)
+- **Issue:** Plan specified using DndContext, DragEndEvent, DragOverlay, closestCenter from @hello-pangea/dnd, but these exports don't exist in v18
+- **Fix:** Replaced with correct API: DragDropContext, Draggable, Droppable, DropResult; updated handleDragEnd to use DropResult instead of DragEndEvent
+- **Files modified:** frontend/src/components/WorkflowBuilder.tsx
+- **Verification:** TypeScript compilation successful, no API errors
+- **Committed in:** 1ce543b (bug fix commit)
+
 ---
 
-**Total deviations:** 1 auto-fixed (1 blocking)
-**Impact on plan:** Component works fully without @mantine/drag-handle (not required). No scope creep.
+**Total deviations:** 2 auto-fixed (1 blocking, 1 bug)
+**Impact on plan:** Bug fix critical for component to compile and function. No scope creep.
 
 ### Pre-existing Work
 
