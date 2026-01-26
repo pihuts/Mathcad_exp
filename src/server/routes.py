@@ -1,9 +1,29 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Dict, Any, Optional
 import time
+import asyncio
 from .dependencies import get_engine_manager
 from src.engine.manager import EngineManager
 from .schemas import JobSubmission, JobResponse, ControlResponse, BatchRequest, BatchStatus
+
+def _open_file_dialog():
+    """Open native file dialog - runs in separate thread"""
+    from tkinter import Tk, filedialog
+    root = Tk()
+    root.withdraw()
+    root.attributes('-topmost', True)
+    root.focus_force()
+
+    file_path = filedialog.askopenfilename(
+        title="Select Mathcad Prime file",
+        filetypes=[
+            ("Mathcad Prime", "*.mcdx"),
+            ("All files", "*.*")
+        ]
+    )
+
+    root.destroy()
+    return file_path
 
 router = APIRouter()
 
@@ -136,4 +156,18 @@ async def stop_workflow(workflow_id: str, manager: EngineManager = Depends(get_e
     """Stop a running workflow"""
     manager.workflow_manager.stop_workflow(workflow_id)
     return {"workflow_id": workflow_id, "status": "stopped"}
+
+@router.post("/files/browse")
+async def browse_for_file():
+    """
+    Open native Windows file dialog and return selected path.
+    Runs tkinter in separate thread to avoid blocking FastAPI.
+    """
+    try:
+        file_path = await asyncio.to_thread(_open_file_dialog)
+        if not file_path:
+            return {"file_path": None, "cancelled": True}
+        return {"file_path": file_path, "cancelled": False}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"File dialog error: {str(e)}")
 
