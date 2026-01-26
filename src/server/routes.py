@@ -62,7 +62,13 @@ async def start_batch(req: BatchRequest, manager: EngineManager = Depends(get_en
     if not manager.is_running():
         raise HTTPException(status_code=503, detail="Engine is not running")
     
-    manager.batch_manager.start_batch(req.batch_id, req.inputs, req.output_dir)
+    manager.batch_manager.start_batch(
+        req.batch_id, 
+        req.inputs, 
+        req.output_dir,
+        export_pdf=req.export_pdf,
+        export_mcdx=req.export_mcdx
+    )
     return ControlResponse(status="started", message=f"Batch {req.batch_id} initiated")
 
 @router.get("/batch/{batch_id}", response_model=BatchStatus)
@@ -156,6 +162,27 @@ async def stop_workflow(workflow_id: str, manager: EngineManager = Depends(get_e
     """Stop a running workflow"""
     manager.workflow_manager.stop_workflow(workflow_id)
     return {"workflow_id": workflow_id, "status": "stopped"}
+
+@router.post("/files/open")
+async def open_file_natively(payload: Dict[str, Any]):
+    """Open a file using the system default application"""
+    path = payload.get("path")
+    if not path or not os.path.exists(path):
+        raise HTTPException(status_code=400, detail="Invalid or missing path")
+    
+    try:
+        import os
+        # Use startfile on Windows, open on Mac, xdg-open on Linux
+        if hasattr(os, 'startfile'):
+            os.startfile(path)
+        else:
+            import subprocess
+            subprocess.call(['open', path] if sys.platform == 'darwin' else ['xdg-open', path])
+        
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/files/browse")
 async def browse_for_file():

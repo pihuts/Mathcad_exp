@@ -78,11 +78,14 @@ class MathcadWorker:
                     raise Exception(f"set_string_input returned error code {error}")
             else:
                 # Pass units to MathcadPy's set_real_input
-                # Default to "" if not specified, preserving worksheet units
-                units_param = units if units is not None else ""
-                # Use preserve_worksheet_units=True only when units is empty/None
-                # Use preserve_worksheet_units=False when units are provided to allow conversion
-                preserve_units = (units is None or units == "")
+                # Treat None, empty string, or "unitless" as no units
+                is_unitless = units is None or units == "" or units.lower() == "unitless"
+                units_param = "" if is_unitless else units
+                
+                # Use preserve_worksheet_units=True ONLY if we are truly unitless
+                # If we passed units="", MathcadPy might try to set units to "" which is valid
+                preserve_units = is_unitless
+                
                 error = self.worksheet.set_real_input(
                     alias, float(value), units=units_param, preserve_worksheet_units=preserve_units
                 )
@@ -112,23 +115,30 @@ class MathcadWorker:
 
     def save_as(self, path: str, format_enum: Optional[int] = None):
         """
-        Saves the current worksheet in the specified format.
-        MathcadPy handles format detection from file extension.
-        format_enum parameter ignored (kept for backward compatibility).
+        Saves the current worksheet.
+        Auto-detects format from extension.
+        Explicitly handles PDF export only for Mathcad > 4.
         """
         if not self.worksheet:
             raise Exception("No worksheet open")
 
-        abs_path = Path(path)
-
-        # Check PDF export support (only works with Mathcad Prime 5+)
-        if abs_path.suffix.lower() == ".pdf":
-            if self.mc.version_major_int <= 4:
-                raise ValueError(
-                    f"PDF export requires Mathcad Prime 5+, current version: {self.mc.version}"
-                )
-
+        abs_path = Path(path).resolve()
+        
+        # Determine if we are saving as PDF
+        is_pdf = abs_path.suffix.lower() == ".pdf"
+        
+        if is_pdf:
+             if self.mc.version_major_int <= 4:
+                 raise ValueError("PDF export requires Mathcad Prime 5+")
+        
         try:
-            self.worksheet.save_as(abs_path)  # MathcadPy auto-detects format from extension
+            # Bypass MathcadPy's save_as method because it passes a Path object 
+            # to the COM method, which can fail in strict environments.
+            # INSTEAD: Access the raw COM object (ws_object) and pass a string explicitly.
+            if hasattr(self.worksheet, 'ws_object'):
+                self.worksheet.ws_object.SaveAs(str(abs_path))
+            else:
+                 # Fallback if internal structure changes, though risky
+                 self.worksheet.save_as(str(abs_path))
         except Exception as e:
-            raise Exception(f"Failed to save to {abs_path}: {str(e)}")
+             raise Exception(f"Failed to save to {abs_path}: {str(e)}")
