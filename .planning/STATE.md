@@ -41,6 +41,7 @@ Progress: ███████████████░ 82% (18/22 plans comp
 - **Workflow Data Models:** Added FileMapping, WorkflowFile, WorkflowConfig (Pydantic BaseModels) for type-safe workflow configuration. Uses linear chain via position field (0,1,2 for A→B→C) and explicit mapping via FileMapping (source_alias→target_alias).
 - **Workflow API:** Added 4 REST endpoints (POST /workflows, POST /workflows/{id}/start, GET /workflows/{id}, POST /workflows/{id}/stop) using manager.workflow_manager dependency. Auto-start on submit, time-based ID generation.
 - **MappingModal UI:** Modal component for creating FileMapping objects with grouped source selection (upstream files → outputs), target input selection, duplicate detection, add/remove functionality.
+- **WorkflowManager Engine:** Background thread execution for multi-file workflows. Linear chain (0,1,2...) with output-to-input mapping. Polls EngineManager.get_job() for completion (30s timeout, 0.5s intervals). Stores intermediate_results dict for downstream mapping.
 - **useWorkflow Hook:** Custom React hook with TanStack Query for workflow creation, status polling (1-second interval), and stop functionality. Follows useBatch pattern for consistency.
 
 ### Roadmap Evolution
@@ -55,14 +56,19 @@ Progress: ███████████████░ 82% (18/22 plans comp
 
 ## Session Continuity
 
+**Session:** 2026-01-26 00:48 - 00:52 UTC
+**Stopped at:** Completed 03-02-PLAN.md
+**Resume file:** None
+
 ### Last Session
-- Completed Phase 3 Plan 07: useWorkflow Hook.
-- Created useWorkflow custom hook for workflow state management
-- Provides createWorkflow and stopWorkflow functions
-- Uses TanStack Query for status polling with 1-second interval
-- Manages activeWorkflowId, workflowData, and error state
-- Polling stops when workflow completes, fails, or is stopped
-- Follows useBatch pattern for consistency across batch and workflow features
+- Completed Phase 3 Plan 02: WorkflowManager Implementation.
+- Created WorkflowManager class for multi-file orchestration
+- Implements linear execution (0,1,2...) with background thread
+- Supports output-to-input mapping via FileMapping configuration
+- Stores intermediate results for downstream mapping
+- Integrates with EngineManager via submit_job and get_job
+- Follows BatchManager threading and polling patterns
+- Added submit_workflow, get_status, and stop_workflow methods
 
 ### Next Steps
 1. **Next:** Phase 3 Plan 08 - Next plan in workflow orchestration
