@@ -208,96 +208,158 @@ function App() {
 
       <AppShell.Main>
         <Container size="xl">
-          <Stack gap="xl">
-            {error && (
-              <Alert icon={<IconAlertCircle size={16} />} title="Error" color="red" withCloseButton onClose={() => setError(null)}>
-                {error}
-              </Alert>
-            )}
-            <Group align="flex-end">
-              <TextInput
-                label="Mathcad File Path"
-                placeholder="C:\path\to\file.mcdx"
-                value={filePath}
-                onChange={(e) => setFilePath(e.currentTarget.value)}
-                style={{ flex: 1 }}
-              />
-              <Button
-                onClick={handleAnalyze}
-                loading={isAnalyzing}
-                disabled={isAnalyzing || !filePath}
-              >
-                Analyze File
-              </Button>
-            </Group>
+          <Tabs value={activeTab} onChange={setActiveTab}>
+            <Tabs.List>
+              <Tabs.Tab value="batch">Batch Processing</Tabs.Tab>
+              <Tabs.Tab value="workflow">Workflow Orchestration</Tabs.Tab>
+            </Tabs.List>
 
-            {aliases.length > 0 && (
-              <Stack gap="xs">
-                <Title order={5}>Input Aliases</Title>
-                <Table>
-                  <Table.Thead>
-                    <Table.Tr>
-                      <Table.Th>Alias</Table.Th>
-                      <Table.Th>Name</Table.Th>
-                      <Table.Th>Configuration</Table.Th>
-                      <Table.Th style={{ width: 100 }}>Action</Table.Th>
-                    </Table.Tr>
-                  </Table.Thead>
-                  <Table.Tbody>
-                    {aliases.map((a) => (
-                      <Table.Tr key={a.alias}>
-                        <Table.Td>{a.alias}</Table.Td>
-                        <Table.Td>{a.name}</Table.Td>
-                        <Table.Td>
-                          {aliasConfigs[a.alias] ? (
-                            <Badge color="blue" variant="light">
-                              {aliasConfigs[a.alias].length} values
-                            </Badge>
-                          ) : (
-                            <Badge color="gray" variant="dot">Single Value (Default)</Badge>
-                          )}
-                        </Table.Td>
-                        <Table.Td>
-                          <ActionIcon variant="light" onClick={() => handleConfigureAlias(a.alias)}>
-                            <IconSettings size={18} />
-                          </ActionIcon>
-                        </Table.Td>
-                      </Table.Tr>
-                    ))}
-                  </Table.Tbody>
-                </Table>
-                
-                <Group justify="space-between" mt="md">
-                  <Text size="sm" fw={500}>
-                    Total Iterations: {iterationCount}
-                  </Text>
-                  <Button 
-                    disabled={iterationCount === 0} 
-                    onClick={handleRun}
-                    loading={batchData?.status === 'running'}
+            <Tabs.Panel value="batch">
+              <Stack gap="xl">
+                {error && (
+                  <Alert icon={<IconAlertCircle size={16} />} title="Error" color="red" withCloseButton onClose={() => setError(null)}>
+                    {error}
+                  </Alert>
+                )}
+                <Group align="flex-end">
+                  <TextInput
+                    label="Mathcad File Path"
+                    placeholder="C:\path\to\file.mcdx"
+                    value={filePath}
+                    onChange={(e) => setFilePath(e.currentTarget.value)}
+                    style={{ flex: 1 }}
+                  />
+                  <Button
+                    onClick={handleAnalyze}
+                    loading={isAnalyzing}
+                    disabled={isAnalyzing || !filePath}
                   >
-                    Run Batch
+                    Analyze File
                   </Button>
                 </Group>
-              </Stack>
-            )}
 
-            {batchData && (
-              <Stack gap="xs">
-                <Group justify="space-between">
-                  <Title order={4}>Batch Progress</Title>
-                  <Group>
-                    <Text size="sm">Progress: {batchData.completed} / {batchData.total}</Text>
-                    {batchData.status === 'running' && (
-                      <Button color="red" variant="light" size="xs" onClick={() => stopBatch(currentBatchId!)}>Stop Batch</Button>
-                    )}
-                  </Group>
-                </Group>
-                <Progress value={progress} animated={batchData.status === 'running'} />
-                <BatchGrid data={batchData?.results} />
+                {aliases.length > 0 && (
+                  <Stack gap="xs">
+                    <Title order={5}>Input Aliases</Title>
+                    <Table>
+                      <Table.Thead>
+                        <Table.Tr>
+                          <Table.Th>Alias</Table.Th>
+                          <Table.Th>Name</Table.Th>
+                          <Table.Th>Configuration</Table.Th>
+                          <Table.Th style={{ width: 100 }}>Action</Table.Th>
+                        </Table.Tr>
+                      </Table.Thead>
+                      <Table.Tbody>
+                        {aliases.map((a) => (
+                          <Table.Tr key={a.alias}>
+                            <Table.Td>{a.alias}</Table.Td>
+                            <Table.Td>{a.name}</Table.Td>
+                            <Table.Td>
+                              {aliasConfigs[a.alias] ? (
+                                <Badge color="blue" variant="light">
+                                  {aliasConfigs[a.alias].length} values
+                                </Badge>
+                              ) : (
+                                <Badge color="gray" variant="dot">Single Value (Default)</Badge>
+                              )}
+                            </Table.Td>
+                            <Table.Td>
+                              <ActionIcon variant="light" onClick={() => handleConfigureAlias(a.alias)}>
+                                <IconSettings size={18} />
+                              </ActionIcon>
+                            </Table.Td>
+                          </Table.Tr>
+                        ))}
+                      </Table.Tbody>
+                    </Table>
+
+                    <Group justify="space-between" mt="md">
+                      <Text size="sm" fw={500}>
+                        Total Iterations: {iterationCount}
+                      </Text>
+                      <Button
+                        disabled={iterationCount === 0}
+                        onClick={handleRun}
+                        loading={batchData?.status === 'running'}
+                      >
+                        Run Batch
+                      </Button>
+                    </Group>
+                  </Stack>
+                )}
+
+                {batchData && (
+                  <Stack gap="xs">
+                    <Group justify="space-between">
+                      <Title order={4}>Batch Progress</Title>
+                      <Group>
+                        <Text size="sm">Progress: {batchData.completed} / {batchData.total}</Text>
+                        {batchData.status === 'running' && (
+                          <Button color="red" variant="light" size="xs" onClick={() => stopBatch(currentBatchId!)}>Stop Batch</Button>
+                        )}
+                      </Group>
+                    </Group>
+                    <Progress value={progress} animated={batchData.status === 'running'} />
+                    <BatchGrid data={batchData?.results} />
+                  </Stack>
+                )}
               </Stack>
-            )}
-          </Stack>
+            </Tabs.Panel>
+
+            <Tabs.Panel value="workflow">
+              <Stack gap="xl">
+                <Title order={3}>Workflow Orchestration</Title>
+                <Text size="sm" c="dimmed">
+                  Chain multiple Mathcad files where outputs drive downstream inputs. Files execute in order (top to bottom).
+                </Text>
+
+                {workflowError && (
+                  <Alert icon={<IconAlertCircle size={16} />} title="Error" color="red" withCloseButton onClose={() => setWorkflowError(null)}>
+                    {workflowError}
+                  </Alert>
+                )}
+
+                <WorkflowBuilder
+                  files={workflowFiles}
+                  mappings={workflowMappings}
+                  onFilesChange={setWorkflowFiles}
+                  onMappingsChange={setWorkflowMappings}
+                  onOpenMappingModal={handleOpenMappingModal}
+                  onConfigureInputs={handleConfigureWorkflowInputs}
+                />
+
+                <Group justify="flex-end">
+                  <Button
+                    disabled={workflowFiles.length === 0 || workflowFiles.some(f => !f.file_path)}
+                    onClick={handleRunWorkflow}
+                    loading={isCreating || (activeWorkflowId && workflowLoading)}
+                  >
+                    Run Workflow
+                  </Button>
+                </Group>
+
+                {activeWorkflowId && (
+                  <Stack gap="xs">
+                    <Group justify="space-between">
+                      <Title order={4}>Workflow Progress</Title>
+                      <Group>
+                        <Text size="sm">
+                          Status: {workflowData?.status?.toUpperCase() || 'RUNNING'}
+                        </Text>
+                        {workflowData?.status === WorkflowStatus.RUNNING && (
+                          <Button color="red" variant="light" size="xs" onClick={stopWorkflow} loading={isStopping}>
+                            Stop Workflow
+                          </Button>
+                        )}
+                      </Group>
+                    </Group>
+                    <Progress value={workflowProgress} animated={workflowData?.status === WorkflowStatus.RUNNING} />
+                  </Stack>
+                )}
+              </Stack>
+            </Tabs.Panel>
+          </Tabs>
         </Container>
       </AppShell.Main>
 
