@@ -232,7 +232,7 @@ Plans:
 
 **Goal:** Users can save and reuse common input configurations to save time.
 **Focus:** Persistence, Usability
-**Status:** Planned
+**Status:** In progress (1/6 plans complete)
 **Plans:** 6 plans in 4 waves
 
 ### Dependencies
@@ -253,7 +253,7 @@ Plans:
 5. Configs use relative paths for cross-machine compatibility.
 
 **Plans:**
-- [ ] 04-01-PLAN.md — Create BatchConfig model and save endpoint
+- [x] 04-01-PLAN.md — Create BatchConfig model and save endpoint
 - [ ] 04-02-PLAN.md — Create list and load endpoints for batch configs
 - [ ] 04-03-PLAN.md — Create frontend API service and useLibrary hook
 - [ ] 04-04-PLAN.md — Create LibraryModal component and integrate into Batch tab

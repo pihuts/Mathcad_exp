@@ -5,11 +5,12 @@
 
 ## Current Position
 
-**Phase:** 3.3 - String Inputs (Complete)
-**Status:** Complete
-**Last activity:** 2026-01-27 - Completed Plan 03.3-02 (End-to-end string input verification).
+**Phase:** 4 - Library & Persistence
+**Plan:** 2 of 6 in current phase
+**Status:** In progress
+**Last activity:** 2026-01-27 - Completed Plan 04-02 (Backend library list/load API).
 
-Progress: ███████████████████ 100% (27/27 plans complete)
+Progress: ████████████████░░░ 93% (29/31 plans complete)
 
 | Phase | Goal | Status |
 |-------|------|--------|
@@ -21,14 +22,14 @@ Progress: ███████████████████ 100% (27/27 
 | **3.1 Browse Buttons** | **Native file dialogs for file selection** | **Complete** |
 | **3.2 Export Options** | **MCDX/PDF export options** | **Complete** |
 | **3.3 String Inputs** | **Support for string-type inputs** | **Complete** |
-| 4. Library | Configuration persistence | Pending |
+| 4. Library | Configuration persistence | In progress |
 | 5. Packaging | Standalone distribution | Pending |
 
 ## Context & Memory
 
 ### Active Context
-- **Focus:** All core features complete - ready for Phase 4 (Library) or Phase 5 (Packaging).
-- **Architecture:** Complete batch and workflow system with string/numeric input support, export options (PDF/MCDX), native file browsing, and MathcadPy integration.
+- **Focus:** Phase 4 (Library & Persistence) backend implementation complete - BatchConfig model, save, list, and load endpoints all functional.
+- **Architecture:** Complete batch and workflow system with string/numeric input support, export options (PDF/MCDX), native file browsing, MathcadPy integration, and library persistence.
 - **Risk:** None currently.
 
 ### Recent Decisions
@@ -54,14 +55,19 @@ Progress: ███████████████████ 100% (27/27 
 - **Batch Threading:** BatchManager uses a background thread to prevent blocking the FastAPI event loop.
 - **InputConfig Dataclass:** Added to protocol.py for type-safe, units-aware input configuration.
 - **Workflow Data Models:** Added FileMapping, WorkflowFile, WorkflowConfig (Pydantic BaseModels).
+- **BatchConfig Model:** Added Pydantic BaseModel for library persistence with version field and relative path support.
+- **Library Save Endpoint:** POST /library/save saves configs as JSON in {filename}_configs/ directories adjacent to .mcdx files.
+- **Relative Path Storage:** file_path stored as filename only, output_dir relative to mcdx parent for cross-machine portability.
+- **Config Directory Pattern:** {mcdx_filename}_configs/ organization for natural discovery and management.
 
 ### Roadmap Evolution
 - Phase 2.1 inserted after Phase 2: MathcadPy Migration (COMPLETED)
 - Phase 2.2 inserted after Phase 2.1: Input Units Specification (COMPLETED)
-- Phase 3: Workflow Orchestration (In Progress)
+- Phase 3: Workflow Orchestration (COMPLETED)
 - Phase 3.1 inserted after Phase 3: Replace text inputs with browse buttons (COMPLETED) - Implemented native file browsing.
 - Phase 3.2 inserted after Phase 3.1: Export Options (MCDX/PDF) (COMPLETED) - Implemented dynamic naming and native file opening.
-- Phase 3.3 added: String Inputs - Support for string-type inputs in addition to numeric inputs.
+- Phase 3.3 added: String Inputs - Support for string-type inputs in addition to numeric inputs (COMPLETED).
+- Phase 4: Library & Persistence (In Progress) - 1 of 6 plans complete.
 
 ### Performance Metrics
 - **Requirements Covered:** 100% (Phase 1), 100% (Phase 2), 100% (Phase 3.1)
@@ -71,17 +77,16 @@ Progress: ███████████████████ 100% (27/27 
 ## Session Continuity
 
 **Session:** 2026-01-27 - Present
-**Stopped at:** Completed Phase 03.3-02 (End-to-end string input verification)
+**Stopped at:** Completed Phase 04-01 (Backend library persistence - BatchConfig model and save endpoint)
 **Resume file:** None
 
 ### Last Session
-- Executed Plan 03.3-02 (End-to-end string input verification).
-- Verified frontend builds successfully with all string input changes.
-- User verified string input UI working correctly (SegmentedControl, conditional tabs, string value entry).
-- User verified numeric input functionality unchanged (no regressions).
-- User verified string values preserved through batch and workflow pipelines.
-- String input feature approved for production use.
-- Phase 3.3 (String Inputs) complete - 100% of planned features implemented.
+- Executed Plan 04-01 (Backend library persistence).
+- Created BatchConfig Pydantic model with validation and version field.
+- Implemented POST /library/save endpoint with relative path conversion.
+- Configs stored as JSON in {filename}_configs/ directories next to .mcdx files.
+- SaveLibraryConfigRequest/Response schemas added for API validation.
+- All verification tests passed - backend persistence foundation complete.
 
 ### Next Steps
 1. **Next:** Phase 4 - Library (Configuration persistence)
