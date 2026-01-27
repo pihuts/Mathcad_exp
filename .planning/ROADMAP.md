@@ -232,18 +232,33 @@ Plans:
 
 **Goal:** Users can save and reuse common input configurations to save time.
 **Focus:** Persistence, Usability
+**Status:** Planned
+**Plans:** 6 plans in 4 waves
 
 ### Dependencies
 - Phase 2 (Batch System)
+- Phase 3 (Workflow System)
 
 ### Requirements
 - **LIB-01**: Save named input sets
 - **LIB-02**: Load saved input sets
+- **LIB-03**: Save workflow configurations
+- **LIB-04**: Load workflow configurations
 
 ### Success Criteria
 1. User can save the current configuration of inputs as a named template.
 2. User can populate input fields by selecting a previously saved template.
 3. Saved templates persist across application restarts.
+4. Workflow configurations (files, mappings, settings) can be saved and reloaded.
+5. Configs use relative paths for cross-machine compatibility.
+
+**Plans:**
+- [ ] 04-01-PLAN.md — Create BatchConfig model and save endpoint
+- [ ] 04-02-PLAN.md — Create list and load endpoints for batch configs
+- [ ] 04-03-PLAN.md — Create frontend API service and useLibrary hook
+- [ ] 04-04-PLAN.md — Create LibraryModal component and integrate into Batch tab
+- [ ] 04-05-PLAN.md — Extend library to support workflow configurations
+- [ ] 04-06-PLAN.md — End-to-end verification of library persistence
 
 ---
 
@@ -277,6 +292,9 @@ Plans:
 | 3 - Workflow | **Complete** | 3 |
 | 3.1 - Browse Buttons | **Complete** | 2 |
 | 3.2 - Export Options | **Complete** | 3 |
+| 3.3 - String Inputs | **Complete** | 4 |
+| 4 - Library & Persistence | **Planned** | 4 |
+| 5 - Production Packaging | **Planned** | 2 |
 | 3.3 - String Inputs | **Planned** | 4 |
 | 4 - Library | **Planned** | 2 |
 | 5 - Packaging | **Planned** | 2 |
