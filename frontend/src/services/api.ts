@@ -151,4 +151,57 @@ export const browseFile = async (): Promise<{ file_path: string | null; cancelle
   return data;
 };
 
+// Library Types
+
+export interface LibraryConfigMetadata {
+  name: string;
+  path: string;
+  created_at: string;
+  version: string;
+}
+
+export interface ListLibraryConfigsResponse {
+  configs: LibraryConfigMetadata[];
+}
+
+export interface SaveLibraryConfigRequest {
+  name: string;
+  file_path: string;
+  inputs: InputConfig[];
+  export_pdf: boolean;
+  export_mcdx: boolean;
+  output_dir?: string;
+}
+
+export interface SaveLibraryConfigResponse {
+  status: string;
+  config_path: string;
+  config_name: string;
+}
+
+export interface LoadLibraryConfigRequest {
+  config_path: string;
+}
+
+export type LoadLibraryConfigResponse = SaveLibraryConfigRequest; // BatchConfig structure
+
+// Library API Functions
+
+export const saveLibraryConfig = async (config: SaveLibraryConfigRequest): Promise<SaveLibraryConfigResponse> => {
+  const { data } = await api.post<SaveLibraryConfigResponse>('/library/save', config);
+  return data;
+};
+
+export const listLibraryConfigs = async (filePath: string): Promise<ListLibraryConfigsResponse> => {
+  const { data } = await api.get<ListLibraryConfigsResponse>('/library/list', {
+    params: { file_path: filePath }
+  });
+  return data;
+};
+
+export const loadLibraryConfig = async (configPath: string): Promise<LoadLibraryConfigResponse> => {
+  const { data } = await api.post<LoadLibraryConfigResponse>('/library/load', { config_path: configPath });
+  return data;
+};
+
 export default api;
