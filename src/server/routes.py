@@ -3,6 +3,7 @@ from typing import Dict, Any, Optional
 import time
 import asyncio
 import os
+import sys
 from .dependencies import get_engine_manager
 from src.engine.manager import EngineManager
 from .schemas import JobSubmission, JobResponse, ControlResponse, BatchRequest, BatchStatus
@@ -197,4 +198,51 @@ async def browse_for_file():
         return {"file_path": file_path, "cancelled": False}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File dialog error: {str(e)}")
+
+
+# Library Endpoints
+
+@router.post("/library/save")
+async def save_library_config(req: Dict[str, Any]):
+    """
+    Save a batch configuration as a named library template.
+    Configs are stored as JSON files in {mcdx_file_parent}/{mcdx_filename}_configs/
+    """
+    from pathlib import Path
+    from src.engine.protocol import BatchConfig
+    import json
+
+    try:
+        # Parse and validate request using Pydantic
+        config = BatchConfig(**req)
+
+        # Determine config directory (next to the .mcdx file)
+        mcdx_path = Path(config.file_path)
+        if not mcdx_path.exists():
+            raise HTTPException(status_code=400, detail=f"Mathcad file not found: {config.file_path}")
+
+        config_dir = mcdx_path.parent / f"{mcdx_path.stem}_configs"
+        config_dir.mkdir(exist_ok=True)
+
+        # Sanitize config name for filename
+        safe_name = "".join(c for c in config.name if c.isalnum() or c in (' ', '-', '_')).strip()
+        config_file = config_dir / f"{safe_name}.json"
+
+        # Convert to relative paths for portability
+        config_dict = config.model_dump(mode='json')
+        config_dict['file_path'] = str(mcdx_path.name)  # Store just filename
+        if config_dict.get('output_dir'):
+            output_rel = str(Path(config_dict['output_dir']).relative_to(mcdx_path.parent))
+            config_dict['output_dir'] = output_rel
+
+        # Write JSON file
+        config_file.write_text(json.dumps(config_dict, indent=2), encoding='utf-8')
+
+        return {
+            "status": "success",
+            "config_path": str(config_file),
+            "config_name": config.name
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
