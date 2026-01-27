@@ -174,7 +174,7 @@ Plans:
 - [x] 03.1-02-PLAN.md — Replace text inputs with browse buttons in frontend components
 
 ---
- 
+
  ## Phase 3.2: Export Options (MCDX/PDF) (COMPLETE)
 
  **Goal:** Add options to automatically export each calculation result as .mcdx and/or .pdf using MathcadPy.
@@ -199,8 +199,34 @@ Plans:
  - [x] 03.2-01-PLAN.md — Update backend models and manager logic for export options
  - [x] 03.2-02-PLAN.md — Add export checkboxes to Batch and Workflow UI
  - [x] 03.2-03-PLAN.md — End-to-end verification of export functionality (with performance optimizations)
- 
+
  ---
+
+## Phase 3.3: String Inputs (INSERTED)
+
+**Goal:** Engineers can provide string-type inputs (material names, labels, file references) alongside numeric inputs in batch and workflow operations.
+**Depends on:** Phase 3.2
+**Plans:** 2 plans in 2 waves
+
+**Rationale:** MathcadPy supports `set_string_input()` and worker.py already routes strings correctly via `isinstance()`. The UI currently only provides numeric input options (Range, NumberInput). Engineers need to specify text-based parameters like material names, labels, or file references.
+
+### Requirements
+- **STR-01**: UI type selector (Number/String) in InputModal
+- **STR-02**: String input entry via Single Value TextInput or CSV column
+- **STR-03**: Hide Range tab and Units selector for string inputs
+- **STR-04**: Preserve string types through batch and workflow pipelines (no coercion to Number)
+
+### Success Criteria
+1. User can toggle between Number and String input types in InputModal
+2. String type shows Single Value tab with TextInput and CSV tab (no Range, no Units)
+3. String values pass through batch pipeline to MathcadPy set_string_input without type coercion
+4. Numeric input behavior is completely unchanged (no regression)
+
+**Plans:**
+- [ ] 03.3-01-PLAN.md — Add type selector to InputModal and update App.tsx pipeline for string preservation
+- [ ] 03.3-02-PLAN.md — End-to-end verification of string input functionality
+
+---
 
 ## Phase 4: Library & Persistence
 
@@ -251,5 +277,6 @@ Plans:
 | 3 - Workflow | **Complete** | 3 |
 | 3.1 - Browse Buttons | **Complete** | 2 |
 | 3.2 - Export Options | **Complete** | 3 |
+| 3.3 - String Inputs | **Planned** | 4 |
 | 4 - Library | **Planned** | 2 |
 | 5 - Packaging | **Planned** | 2 |
