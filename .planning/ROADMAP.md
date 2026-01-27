@@ -232,7 +232,7 @@ Plans:
 
 **Goal:** Users can save and reuse common input configurations to save time.
 **Focus:** Persistence, Usability
-**Status:** In progress (1/6 plans complete)
+**Status:** In progress (4/6 plans complete)
 **Plans:** 6 plans in 4 waves
 
 ### Dependencies
@@ -254,9 +254,9 @@ Plans:
 
 **Plans:**
 - [x] 04-01-PLAN.md — Create BatchConfig model and save endpoint
-- [ ] 04-02-PLAN.md — Create list and load endpoints for batch configs
-- [ ] 04-03-PLAN.md — Create frontend API service and useLibrary hook
-- [ ] 04-04-PLAN.md — Create LibraryModal component and integrate into Batch tab
+- [x] 04-02-PLAN.md — Create list and load endpoints for batch configs
+- [x] 04-03-PLAN.md — Create frontend API service and useLibrary hook
+- [x] 04-04-PLAN.md — Create LibraryModal component and integrate into Batch tab
 - [ ] 04-05-PLAN.md — Extend library to support workflow configurations
 - [ ] 04-06-PLAN.md — End-to-end verification of library persistence
 
@@ -293,7 +293,7 @@ Plans:
 | 3.1 - Browse Buttons | **Complete** | 2 |
 | 3.2 - Export Options | **Complete** | 3 |
 | 3.3 - String Inputs | **Complete** | 4 |
-| 4 - Library & Persistence | **Planned** | 4 |
+| 4 - Library & Persistence | **In Progress** | 4 |
 | 5 - Production Packaging | **Planned** | 2 |
 | 3.3 - String Inputs | **Planned** | 4 |
 | 4 - Library | **Planned** | 2 |
