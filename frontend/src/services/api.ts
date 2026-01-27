@@ -204,4 +204,46 @@ export const loadLibraryConfig = async (configPath: string): Promise<LoadLibrary
   return data;
 };
 
+// Workflow Library Types
+
+export interface WorkflowLibraryConfigMetadata {
+  name: string;
+  path: string;
+  created_at: string;
+  files_count: number;
+}
+
+export interface ListWorkflowLibraryConfigsResponse {
+  configs: WorkflowLibraryConfigMetadata[];
+}
+
+export interface SaveWorkflowLibraryConfigRequest {
+  name: string;
+  files: WorkflowFile[];
+  mappings: FileMapping[];
+  stop_on_error: boolean;
+  export_pdf: boolean;
+  export_mcdx: boolean;
+  output_dir?: string;
+}
+
+export type LoadWorkflowLibraryConfigResponse = WorkflowConfig;
+
+// Workflow Library API Functions
+
+export const saveWorkflowLibraryConfig = async (config: SaveWorkflowLibraryConfigRequest): Promise<SaveLibraryConfigResponse> => {
+  const { data } = await api.post<SaveLibraryConfigResponse>('/library/save/workflow', config);
+  return data;
+};
+
+export const listWorkflowLibraryConfigs = async (): Promise<ListWorkflowLibraryConfigsResponse> => {
+  const { data } = await api.get<ListWorkflowLibraryConfigsResponse>('/library/list/workflows');
+  return data;
+};
+
+export const loadWorkflowLibraryConfig = async (configPath: string): Promise<LoadWorkflowLibraryConfigResponse> => {
+  const { data } = await api.post<LoadWorkflowLibraryConfigResponse>('/library/load/workflow', { config_path: configPath });
+  return data;
+};
+
 export default api;
