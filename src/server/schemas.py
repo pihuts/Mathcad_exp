@@ -50,3 +50,15 @@ class SaveLibraryConfigResponse(BaseModel):
     status: str
     config_path: str
     config_name: str
+
+class LibraryConfigMetadata(BaseModel):
+    name: str
+    path: str
+    created_at: str
+    version: str = "1.0"
+
+class ListLibraryConfigsResponse(BaseModel):
+    configs: List[LibraryConfigMetadata]
+
+class LoadLibraryConfigRequest(BaseModel):
+    config_path: str
