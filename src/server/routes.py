@@ -246,3 +246,40 @@ async def save_library_config(req: Dict[str, Any]):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/library/list")
+async def list_library_configs(file_path: str):
+    """
+    List all saved library configurations for a given Mathcad file.
+    Returns metadata (name, path, created_at) for each config.
+    """
+    from pathlib import Path
+    import json
+
+    try:
+        mcdx_path = Path(file_path)
+        if not mcdx_path.exists():
+            raise HTTPException(status_code=400, detail=f"Mathcad file not found: {file_path}")
+
+        config_dir = mcdx_path.parent / f"{mcdx_path.stem}_configs"
+
+        if not config_dir.exists():
+            return {"configs": []}
+
+        configs = []
+        for config_file in config_dir.glob("*.json"):
+            try:
+                config_data = json.loads(config_file.read_text(encoding='utf-8'))
+                configs.append({
+                    "name": config_data.get("name", config_file.stem),
+                    "path": str(config_file),
+                    "created_at": config_data.get("created_at", "unknown"),
+                    "version": config_data.get("version", "1.0")
+                })
+            except Exception:
+                # Skip corrupted config files
+                continue
+
+        return {"configs": configs}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
