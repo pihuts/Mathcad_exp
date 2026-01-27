@@ -6,9 +6,9 @@
 ## Current Position
 
 **Phase:** 4 - Library & Persistence
-**Plan:** 2 of 6 in current phase
+**Plan:** 3 of 6 in current phase
 **Status:** In progress
-**Last activity:** 2026-01-27 - Completed Plan 04-02 (Backend library list/load API).
+**Last activity:** 2026-01-27 - Completed Plan 04-03 (Frontend library API and React Query hook).
 
 Progress: ████████████████░░░ 93% (29/31 plans complete)
 
@@ -54,6 +54,7 @@ Progress: ████████████████░░░ 93% (29/31 p
 - **MathcadPrime.Application:** Switched to this ProgID as it is the registered one in the environment.
 - **Library Persistence (04-01):** Created BatchConfig Pydantic model for type-safe config serialization. Implemented POST /library/save endpoint that stores configs as JSON in {filename}_configs/ directories with relative paths for portability.
 - **Library List/Load (04-02):** Implemented GET /library/list endpoint for browsing saved configs (returns metadata only). Implemented POST /library/load endpoint for loading configs with path resolution (relative to absolute). Uses BatchConfig.model_validate() for validation.
+- **Frontend Library API (04-03):** Created TypeScript interfaces in api.ts matching backend schemas exactly (LibraryConfigMetadata, ListLibraryConfigsResponse, SaveLibraryConfigRequest, SaveLibraryConfigResponse, LoadLibraryConfigRequest, LoadLibraryConfigResponse). Implemented saveLibraryConfig, listLibraryConfigs, loadLibraryConfig API functions using axios. Created useLibrary React Query hook with 5-minute cache, automatic invalidation after save, and loading/error states for UI binding.
 - **Batch Threading:** BatchManager uses a background thread to prevent blocking the FastAPI event loop.
 - **InputConfig Dataclass:** Added to protocol.py for type-safe, units-aware input configuration.
 - **Workflow Data Models:** Added FileMapping, WorkflowFile, WorkflowConfig (Pydantic BaseModels).
@@ -91,9 +92,8 @@ Progress: ████████████████░░░ 93% (29/31 p
 - All verification tests passed - backend library API complete.
 
 ### Next Steps
-1. **Next:** Plan 04-03 - Frontend library UI (integrate list/load endpoints with UI)
-2. Then Plan 04-04 - Delete endpoint and UI
-3. Then Plan 04-05 - Library autocomplete and search
-4. Then Plan 04-06 - End-to-end verification
-5. Or Phase 5 - Packaging (Standalone distribution)
-6. Backend library API complete - ready for frontend integration
+1. **Next:** Plan 04-04 - Library UI component (LibraryModal with save/load/delete)
+2. Then Plan 04-05 - Library autocomplete and search
+3. Then Plan 04-06 - End-to-end verification
+4. Or Phase 5 - Packaging (Standalone distribution)
+5. Frontend library API and hook complete - ready for UI integration
