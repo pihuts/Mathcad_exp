@@ -5,11 +5,11 @@
 
 ## Current Position
 
-**Phase:** 3.2 - Export Options (MCDX/PDF) (Complete)
-**Status:** Complete
-**Last activity:** 2026-01-27 - Completed Plan 03.2-03 (Verification with performance optimizations).
+**Phase:** 3.3 - String Inputs (In Progress)
+**Status:** In Progress
+**Last activity:** 2026-01-27 - Completed Plan 03.3-01 (String input type selector and pipeline integration).
 
-Progress: █████████████████ 93% (25/27 plans complete)
+Progress: ██████████████████ 96% (26/27 plans complete)
 
 | Phase | Goal | Status |
 |-------|------|--------|
@@ -20,17 +20,22 @@ Progress: █████████████████ 93% (25/27 plans c
 | 3. Workflow | Multi-file chaining | Complete |
 | **3.1 Browse Buttons** | **Native file dialogs for file selection** | **Complete** |
 | **3.2 Export Options** | **MCDX/PDF export options** | **Complete** |
+| **3.3 String Inputs** | **Support for string-type inputs** | **In Progress** |
 | 4. Library | Configuration persistence | Pending |
 | 5. Packaging | Standalone distribution | Pending |
 
 ## Context & Memory
 
 ### Active Context
-- **Focus:** Export Options Implementation - PDF and MCDX format selection.
-- **Architecture:** Frontend checkboxes pass export flags to backend, ResultsList displays generated files with native opening.
+- **Focus:** String Inputs Implementation - String-type input support in InputModal with type-preserving pipelines.
+- **Architecture:** SegmentedControl toggles Number/String input types, typeof detection preserves types through batch/workflow pipelines without explicit type field.
 - **Risk:** None currently.
 
 ### Recent Decisions
+- **Type Detection via typeof:** Use typeof on first array element instead of explicit inputType field in InputConfig - keeps pipeline simple, YAGNI principle.
+- **String Single Value Array Wrapping:** Wrap single string values in array [stringValue] for consistency with batch pipeline cartesian product logic.
+- **Conditional Units UI:** Hide Units selector when String type is selected - strings don't have units, cleaner UX.
+- **String CSV Preservation:** String CSV values use String() not Number() to preserve type through to MathcadPy set_string_input.
 - **File Handle Reuse Optimization:** Track currently open file and skip reopening if same file already open - significant performance improvement for batch processing.
 - **Fast Polling for Synchronous Operations:** Reduced polling interval from 0.5s to 0.1s - MathcadPy operations are synchronous, faster polling = faster response.
 - **Dynamic File Naming:** Batch exports use `BaseName_ParamName-Value` pattern; Workflow exports use `WorkflowName_StepN_FileName` pattern for traceability.
@@ -55,6 +60,7 @@ Progress: █████████████████ 93% (25/27 plans c
 - Phase 3: Workflow Orchestration (In Progress)
 - Phase 3.1 inserted after Phase 3: Replace text inputs with browse buttons (COMPLETED) - Implemented native file browsing.
 - Phase 3.2 inserted after Phase 3.1: Export Options (MCDX/PDF) (COMPLETED) - Implemented dynamic naming and native file opening.
+- Phase 3.3 added: String Inputs - Support for string-type inputs in addition to numeric inputs.
 
 ### Performance Metrics
 - **Requirements Covered:** 100% (Phase 1), 100% (Phase 2), 100% (Phase 3.1)
@@ -64,18 +70,18 @@ Progress: █████████████████ 93% (25/27 plans c
 ## Session Continuity
 
 **Session:** 2026-01-27 - Present
-**Stopped at:** Completed Phase 03.2 (Export Options)
+**Stopped at:** Completed Phase 03.3-01 (String input type selector and pipeline integration)
 **Resume file:** None
 
 ### Last Session
-- Executed Plan 03.2-03 (Verification with performance optimizations).
-- Created comprehensive verification guide for export functionality.
-- Applied critical performance optimizations based on user testing feedback.
-- Eliminated unnecessary file reopening (major performance improvement).
-- Optimized polling intervals for faster response (0.5s → 0.1s).
-- User testing confirmed export functionality working correctly with significant performance gains.
+- Executed Plan 03.3-01 (String input type selector and pipeline integration).
+- Added SegmentedControl to InputModal for Number/String toggle.
+- Implemented conditional tabs (Range/Single Value/CSV) based on input type.
+- Added type detection and preservation through batch/workflow pipelines.
+- TypeScript compilation passed cleanly, frontend build successful.
+- No deviations from plan, no issues encountered.
 
 ### Next Steps
-1. **Next:** Phase 4 - Library (Configuration persistence)
-2. Or Phase 5 - Packaging (Standalone distribution)
-3. Phase 03.2 Export Options complete - ready for production use.
+1. **Next:** Continue Phase 3.3 (if additional string input features needed)
+2. Or Phase 4 - Library (Configuration persistence)
+3. Or Phase 5 - Packaging (Standalone distribution)
