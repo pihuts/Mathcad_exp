@@ -1,11 +1,11 @@
-import { Modal, NumberInput, Button, Stack, Group, Tabs, FileInput, Text, Select } from '@mantine/core'
+import { Modal, NumberInput, Button, Stack, Group, Tabs, FileInput, Text, Select, SegmentedControl, TextInput } from '@mantine/core'
 import { useState, useEffect } from 'react'
 import { generateRange } from '../utils/generators'
 import { parseCSV, getHeaders } from '../utils/csv_parser'
 import type { InputConfig } from '../services/api'
 
 const UNIT_PRESETS = [
-  { value: "", label: "Use Worksheet Units (Default)" },
+  { value: "", label: "Unitless (no units)" },
   { value: "in", label: "in (inches)" },
   { value: "ft", label: "ft (feet)" },
   { value: "mm", label: "mm (millimeters)" },
@@ -32,12 +32,16 @@ interface InputModalProps {
 
 export const InputModal = ({ opened, onClose, alias, onSave }: InputModalProps) => {
   const [activeTab, setActiveTab] = useState<string | null>('range')
-  
+  const [inputType, setInputType] = useState<'number' | 'string'>('number')
+
   // Range state
   const [start, setStart] = useState<number | string>(0)
   const [end, setEnd] = useState<number | string>(10)
   const [step, setStep] = useState<number | string>(1)
-  
+
+  // String state
+  const [stringValue, setStringValue] = useState<string>('')
+
   // CSV state
   const [csvFile, setCsvFile] = useState<File | null>(null)
   const [csvHeaders, setCsvHeaders] = useState<string[]>([])
@@ -56,32 +60,69 @@ export const InputModal = ({ opened, onClose, alias, onSave }: InputModalProps) 
     }
   }, [csvFile]);
 
+  // Reset activeTab when inputType changes
+  useEffect(() => {
+    if (inputType === 'string') {
+      setActiveTab('single');
+    } else if (inputType === 'number') {
+      setActiveTab('range');
+    }
+  }, [inputType]);
+
   const handleSave = () => {
-    const value: any = activeTab === 'range'
-      ? generateRange(Number(start), Number(end), Number(step))
-      : (selectedHeader && csvData.length > 0
-        ? csvData.map(row => row[selectedHeader])
-        : null);
+    let value: any = null;
+
+    if (inputType === 'number') {
+      // Numeric input handling
+      if (activeTab === 'range') {
+        value = generateRange(Number(start), Number(end), Number(step));
+      } else if (activeTab === 'csv' && selectedHeader && csvData.length > 0) {
+        value = csvData.map(row => Number(row[selectedHeader]));
+      }
+    } else if (inputType === 'string') {
+      // String input handling
+      if (activeTab === 'single') {
+        const trimmed = stringValue.trim();
+        if (trimmed === '') return; // Don't save empty strings
+        value = [trimmed];
+      } else if (activeTab === 'csv' && selectedHeader && csvData.length > 0) {
+        value = csvData.map(row => String(row[selectedHeader]).trim());
+        // Validate no empty strings
+        if (value.some((v: string) => v === '')) return;
+      }
+    }
 
     if (value !== null) {
       onSave({
         alias: alias,
         value: value,
-        units: selectedUnits || undefined  // Convert "" to undefined
+        units: inputType === 'number' ? (selectedUnits || undefined) : undefined
       });
     }
   }
 
   return (
-    <Modal opened={opened} onClose={onClose} title={`Configure Alias: ${alias}`} size="lg">
-      <Stack>
+    <Modal opened={opened} onClose={onClose} title={`Configure Alias: ${alias}`} size="md" centered>
+      <Stack gap="md" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+        <SegmentedControl
+          value={inputType}
+          onChange={(val) => setInputType(val as 'number' | 'string')}
+          data={[
+            { label: 'Number', value: 'number' },
+            { label: 'String', value: 'string' }
+          ]}
+          fullWidth
+        />
+
         <Tabs value={activeTab} onChange={setActiveTab}>
           <Tabs.List>
-            <Tabs.Tab value="range">Range</Tabs.Tab>
+            {inputType === 'number' && <Tabs.Tab value="range">Range</Tabs.Tab>}
+            {inputType === 'string' && <Tabs.Tab value="single">Single Value</Tabs.Tab>}
             <Tabs.Tab value="csv">CSV File</Tabs.Tab>
           </Tabs.List>
 
-          <Tabs.Panel value="range" pt="md">
+          {inputType === 'number' && (
+            <Tabs.Panel value="range" pt="md">
             <Stack>
               <Group grow>
                 <NumberInput label="Start" value={start} onChange={setStart} />
@@ -92,14 +133,31 @@ export const InputModal = ({ opened, onClose, alias, onSave }: InputModalProps) 
                 Resulting values: {generateRange(Number(start), Number(end), Number(step)).join(', ')}
               </Text>
             </Stack>
-          </Tabs.Panel>
+            </Tabs.Panel>
+          )}
+
+          {inputType === 'string' && (
+            <Tabs.Panel value="single" pt="md">
+              <Stack>
+                <TextInput
+                  label="String Value"
+                  placeholder="Enter text value (e.g., material name, label)"
+                  value={stringValue}
+                  onChange={(e) => setStringValue(e.currentTarget.value)}
+                />
+                <Text size="xs" c="dimmed">
+                  This value will be passed as-is to MathcadPy's set_string_input
+                </Text>
+              </Stack>
+            </Tabs.Panel>
+          )}
 
           <Tabs.Panel value="csv" pt="md">
             <Stack>
-              <FileInput 
-                label="Upload CSV" 
-                placeholder="Choose file" 
-                value={csvFile} 
+              <FileInput
+                label="Upload CSV"
+                placeholder="Choose file"
+                value={csvFile}
                 onChange={setCsvFile}
                 accept=".csv"
               />
@@ -121,15 +179,17 @@ export const InputModal = ({ opened, onClose, alias, onSave }: InputModalProps) 
           </Tabs.Panel>
         </Tabs>
 
-        <Select
-          label="Units"
-          placeholder="Select units (optional)"
-          data={UNIT_PRESETS}
-          value={selectedUnits}
-          onChange={setSelectedUnits}
-          searchable
-          clearable  // Allow clearing selection (goes back to default "")
-        />
+        {inputType === 'number' && (
+          <Select
+            label="Units"
+            placeholder="Select units (optional)"
+            data={UNIT_PRESETS}
+            value={selectedUnits}
+            onChange={setSelectedUnits}
+            searchable
+            allowDeselect={false}
+          />
+        )}
 
         <Group justify="flex-end" mt="md">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
