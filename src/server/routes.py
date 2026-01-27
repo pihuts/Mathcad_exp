@@ -283,3 +283,41 @@ async def list_library_configs(file_path: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.post("/library/load")
+async def load_library_config(req: Dict[str, Any]):
+    """
+    Load a saved library configuration by file path.
+    Returns BatchConfig with absolute paths resolved.
+    """
+    from pathlib import Path
+    from src.engine.protocol import BatchConfig
+    import json
+
+    try:
+        config_path_str = req.get("config_path")
+        if not config_path_str:
+            raise HTTPException(status_code=400, detail="Missing config_path")
+
+        config_path = Path(config_path_str)
+        if not config_path.exists():
+            raise HTTPException(status_code=404, detail=f"Config file not found: {config_path_str}")
+
+        # Read and validate using Pydantic
+        config_json = config_path.read_text(encoding='utf-8')
+        config_dict = json.loads(config_json)
+
+        # Resolve relative paths to absolute
+        mcdx_path = config_path.parent.parent / config_dict['file_path']
+        config_dict['file_path'] = str(mcdx_path.resolve())
+
+        if config_dict.get('output_dir'):
+            output_abs = config_path.parent.parent / config_dict['output_dir']
+            config_dict['output_dir'] = str(output_abs.resolve())
+
+        # Validate with Pydantic
+        config = BatchConfig.model_validate(config_dict)
+
+        return config.model_dump(mode='json')
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
