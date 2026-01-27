@@ -37,3 +37,16 @@ class BatchStatus(BaseModel):
     results: List[BatchRow]
     generated_files: List[str] = []
     error: Optional[str] = None
+
+class SaveLibraryConfigRequest(BaseModel):
+    name: str
+    file_path: str
+    inputs: List[Dict[str, Any]]
+    export_pdf: bool = True
+    export_mcdx: bool = False
+    output_dir: Optional[str] = None
+
+class SaveLibraryConfigResponse(BaseModel):
+    status: str
+    config_path: str
+    config_name: str
