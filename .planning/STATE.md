@@ -52,6 +52,8 @@ Progress: ████████████████░░░ 93% (29/31 p
 - **Backend-Driven Browsing:** Frontend Browse button calls API, API opens dialog on server (local machine), returns full path.
 - **Browse Button UI:** Replaced plain text inputs with Browse button + filename display text. Full path shown in tooltip to keep UI clean.
 - **MathcadPrime.Application:** Switched to this ProgID as it is the registered one in the environment.
+- **Library Persistence (04-01):** Created BatchConfig Pydantic model for type-safe config serialization. Implemented POST /library/save endpoint that stores configs as JSON in {filename}_configs/ directories with relative paths for portability.
+- **Library List/Load (04-02):** Implemented GET /library/list endpoint for browsing saved configs (returns metadata only). Implemented POST /library/load endpoint for loading configs with path resolution (relative to absolute). Uses BatchConfig.model_validate() for validation.
 - **Batch Threading:** BatchManager uses a background thread to prevent blocking the FastAPI event loop.
 - **InputConfig Dataclass:** Added to protocol.py for type-safe, units-aware input configuration.
 - **Workflow Data Models:** Added FileMapping, WorkflowFile, WorkflowConfig (Pydantic BaseModels).
@@ -81,14 +83,17 @@ Progress: ████████████████░░░ 93% (29/31 p
 **Resume file:** None
 
 ### Last Session
-- Executed Plan 04-01 (Backend library persistence).
-- Created BatchConfig Pydantic model with validation and version field.
-- Implemented POST /library/save endpoint with relative path conversion.
-- Configs stored as JSON in {filename}_configs/ directories next to .mcdx files.
-- SaveLibraryConfigRequest/Response schemas added for API validation.
-- All verification tests passed - backend persistence foundation complete.
+- Executed Plan 04-02 (Backend library list/load API).
+- Implemented GET /library/list endpoint for browsing saved configs (returns metadata).
+- Implemented POST /library/load endpoint with path resolution (relative to absolute).
+- Added LibraryConfigMetadata, ListLibraryConfigsResponse, LoadLibraryConfigRequest schemas.
+- Integrated with BatchConfig.model_validate() for validation.
+- All verification tests passed - backend library API complete.
 
 ### Next Steps
-1. **Next:** Phase 4 - Library (Configuration persistence)
-2. Or Phase 5 - Packaging (Standalone distribution)
-3. All core features complete - ready for deployment or library/packaging phases
+1. **Next:** Plan 04-03 - Frontend library UI (integrate list/load endpoints with UI)
+2. Then Plan 04-04 - Delete endpoint and UI
+3. Then Plan 04-05 - Library autocomplete and search
+4. Then Plan 04-06 - End-to-end verification
+5. Or Phase 5 - Packaging (Standalone distribution)
+6. Backend library API complete - ready for frontend integration
