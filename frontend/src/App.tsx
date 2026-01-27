@@ -1,6 +1,6 @@
 import { AppShell, Title, Container, Button, Group, Stack, Progress, Text, Table, Badge, ActionIcon, Alert, Tabs, Paper, Checkbox } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { IconSettings, IconAlertCircle, IconFile } from '@tabler/icons-react'
+import { IconSettings, IconAlertCircle, IconFile, IconFolder } from '@tabler/icons-react'
 import { useState, useMemo } from 'react'
 import { BatchGrid } from './components/BatchGrid'
 import { InputModal } from './components/InputModal'
@@ -8,6 +8,7 @@ import { WorkflowBuilder } from './components/WorkflowBuilder'
 import { MappingModal } from './components/MappingModal'
 import { BisayaStatus } from './components/BisayaStatus'
 import { ResultsList } from './components/ResultsList'
+import { LibraryModal } from './components/LibraryModal'
 import { useBatch } from './hooks/useBatch'
 import { useWorkflow } from './hooks/useWorkflow'
 import { getInputs, browseFile } from './services/api'
@@ -27,6 +28,7 @@ function App() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [exportPdf, setExportPdf] = useState(true);
   const [exportMcdx, setExportMcdx] = useState(false);
+  const [libraryOpened, setLibraryOpened] = useState(false);
 
   // Workflow state
   const [activeTab, setActiveTab] = useState<string | null>('batch');
@@ -129,6 +131,23 @@ function App() {
     };
 
     createWorkflow(workflowConfig);
+  };
+
+  const handleLoadLibraryConfig = (config: {
+    inputs: InputConfig[];
+    exportPdf: boolean;
+    exportMcdx: boolean;
+  }) => {
+    // Convert InputConfig[] back to aliasConfigs structure
+    const newAliasConfigs: Record<string, any[]> = {};
+
+    config.inputs.forEach((inputConfig) => {
+      newAliasConfigs[inputConfig.alias] = [{ value: inputConfig.value, units: inputConfig.units }];
+    });
+
+    setAliasConfigs(newAliasConfigs);
+    setExportPdf(config.exportPdf);
+    setExportMcdx(config.exportMcdx);
   };
 
   const workflowProgress = workflowData ? workflowData.progress : 0;
@@ -328,6 +347,9 @@ function App() {
                               onChange={(e) => setExportMcdx(e.currentTarget.checked)}
                             />
                           </Group>
+                          <Button onClick={() => setLibraryOpened(true)} variant="light" leftSection={<IconFolder size={16} />}>
+                            Library
+                          </Button>
                           <Button
                             disabled={iterationCount === 0}
                             onClick={handleRun}
@@ -484,6 +506,17 @@ function App() {
         onClose={() => setWorkflowInputFile(null)}
         alias={workflowInputFile?.inputs[0]?.alias || ''}
         onSave={(values) => handleSaveWorkflowInputs(workflowInputFile?.inputs[0]?.alias || '', values)}
+      />
+
+      <LibraryModal
+        opened={libraryOpened}
+        onClose={() => setLibraryOpened(false)}
+        filePath={filePath}
+        currentInputs={aliasConfigs}
+        exportPdf={exportPdf}
+        exportMcdx={exportMcdx}
+        outputDir={undefined}
+        onLoadConfig={handleLoadLibraryConfig}
       />
     </>
   )
