@@ -321,3 +321,142 @@ async def load_library_config(req: Dict[str, Any]):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# Workflow Library Endpoints
+
+@router.post("/library/save/workflow")
+async def save_workflow_config(req: Dict[str, Any]):
+    """
+    Save a workflow configuration as a named library template.
+    Workflows stored in workflow_library/ directory at project root.
+    """
+    from pathlib import Path
+    from src.engine.protocol import WorkflowConfig
+    import json
+
+    try:
+        # Parse and validate request using Pydantic
+        config = WorkflowConfig(**req)
+
+        # Use workflow_library/ at project root (cross-workflow configs)
+        # Or could store next to first file in workflow
+        if config.files and len(config.files) > 0:
+            first_file = Path(config.files[0].file_path)
+            library_dir = first_file.parent.parent / "workflow_library"
+        else:
+            # Fallback to current directory
+            library_dir = Path.cwd() / "workflow_library"
+
+        library_dir.mkdir(exist_ok=True)
+
+        # Sanitize config name for filename
+        safe_name = "".join(c for c in config.name if c.isalnum() or c in (' ', '-', '_')).strip()
+        config_file = library_dir / f"{safe_name}.json"
+
+        # Convert to relative paths for portability
+        # For workflows, store paths relative to library_dir
+        config_dict = config.model_dump(mode='json')
+        base_path = library_dir.parent
+
+        for file in config_dict.get('files', []):
+            if file.get('file_path'):
+                try:
+                    rel_path = Path(file['file_path']).relative_to(base_path)
+                    file['file_path'] = str(rel_path)
+                except ValueError:
+                    # File on different drive - keep absolute
+                    pass
+
+        if config_dict.get('output_dir'):
+            try:
+                output_rel = Path(config_dict['output_dir']).relative_to(base_path)
+                config_dict['output_dir'] = str(output_rel)
+            except ValueError:
+                pass
+
+        # Write JSON file
+        config_file.write_text(json.dumps(config_dict, indent=2), encoding='utf-8')
+
+        return {
+            "status": "success",
+            "config_path": str(config_file),
+            "config_name": config.name
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/library/list/workflows")
+async def list_workflow_configs():
+    """
+    List all saved workflow configurations.
+    Returns metadata (name, path, created_at) for each config.
+    """
+    from pathlib import Path
+    import json
+
+    try:
+        library_dir = Path.cwd() / "workflow_library"
+
+        if not library_dir.exists():
+            return {"configs": []}
+
+        configs = []
+        for config_file in library_dir.glob("*.json"):
+            try:
+                config_data = json.loads(config_file.read_text(encoding='utf-8'))
+                configs.append({
+                    "name": config_data.get("name", config_file.stem),
+                    "path": str(config_file),
+                    "created_at": config_data.get("created_at", "unknown"),
+                    "files_count": len(config_data.get("files", [])),
+                })
+            except Exception:
+                continue
+
+        return {"configs": configs}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/library/load/workflow")
+async def load_workflow_config(req: Dict[str, Any]):
+    """
+    Load a saved workflow configuration by file path.
+    Returns WorkflowConfig with absolute paths resolved.
+    """
+    from pathlib import Path
+    from src.engine.protocol import WorkflowConfig
+    import json
+
+    try:
+        config_path_str = req.get("config_path")
+        if not config_path_str:
+            raise HTTPException(status_code=400, detail="Missing config_path")
+
+        config_path = Path(config_path_str)
+        if not config_path.exists():
+            raise HTTPException(status_code=404, detail=f"Config file not found: {config_path_str}")
+
+        # Read and validate using Pydantic
+        config_json = config_path.read_text(encoding='utf-8')
+        config_dict = json.loads(config_json)
+
+        # Resolve relative paths to absolute
+        base_path = config_path.parent.parent
+
+        for file in config_dict.get('files', []):
+            if file.get('file_path'):
+                resolved_path = base_path / file['file_path']
+                file['file_path'] = str(resolved_path.resolve())
+
+        if config_dict.get('output_dir'):
+            output_abs = base_path / config_dict['output_dir']
+            config_dict['output_dir'] = str(output_abs.resolve())
+
+        # Validate with Pydantic
+        config = WorkflowConfig.model_validate(config_dict)
+
+        return config.model_dump(mode='json')
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
