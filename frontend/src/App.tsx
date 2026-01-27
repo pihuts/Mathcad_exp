@@ -9,6 +9,7 @@ import { MappingModal } from './components/MappingModal'
 import { BisayaStatus } from './components/BisayaStatus'
 import { ResultsList } from './components/ResultsList'
 import { LibraryModal } from './components/LibraryModal'
+import { WorkflowLibraryModal } from './components/WorkflowLibraryModal'
 import { useBatch } from './hooks/useBatch'
 import { useWorkflow } from './hooks/useWorkflow'
 import { getInputs, browseFile } from './services/api'
@@ -29,6 +30,7 @@ function App() {
   const [exportPdf, setExportPdf] = useState(true);
   const [exportMcdx, setExportMcdx] = useState(false);
   const [libraryOpened, setLibraryOpened] = useState(false);
+  const [workflowLibraryOpened, setWorkflowLibraryOpened] = useState(false);
 
   // Workflow state
   const [activeTab, setActiveTab] = useState<string | null>('batch');
@@ -148,6 +150,13 @@ function App() {
     setAliasConfigs(newAliasConfigs);
     setExportPdf(config.exportPdf);
     setExportMcdx(config.exportMcdx);
+  };
+
+  const handleLoadWorkflowLibrary = (config: WorkflowConfig) => {
+    setWorkflowFiles(config.files);
+    setWorkflowMappings(config.mappings);
+    setWorkflowExportPdf(config.export_pdf);
+    setWorkflowExportMcdx(config.export_mcdx);
   };
 
   const workflowProgress = workflowData ? workflowData.progress : 0;
@@ -422,13 +431,18 @@ function App() {
                         onChange={(e) => setWorkflowExportMcdx(e.currentTarget.checked)}
                       />
                     </Group>
-                    <Button
-                      disabled={workflowFiles.length === 0 || workflowFiles.some(f => !f.file_path)}
-                      onClick={handleRunWorkflow}
-                      loading={isCreating || (!!activeWorkflowId && workflowLoading)}
-                    >
-                      Run Workflow
-                    </Button>
+                    <Group gap="xs">
+                      <Button onClick={() => setWorkflowLibraryOpened(true)} variant="light">
+                        Library
+                      </Button>
+                      <Button
+                        disabled={workflowFiles.length === 0 || workflowFiles.some(f => !f.file_path)}
+                        onClick={handleRunWorkflow}
+                        loading={isCreating || (!!activeWorkflowId && workflowLoading)}
+                      >
+                        Run Workflow
+                      </Button>
+                    </Group>
                   </Group>
 
                   {activeWorkflowId && (
@@ -517,6 +531,20 @@ function App() {
         exportMcdx={exportMcdx}
         outputDir={undefined}
         onLoadConfig={handleLoadLibraryConfig}
+      />
+
+      <WorkflowLibraryModal
+        opened={workflowLibraryOpened}
+        onClose={() => setWorkflowLibraryOpened(false)}
+        currentWorkflow={{
+          name: `workflow-${Date.now()}`,
+          files: workflowFiles,
+          mappings: workflowMappings,
+          stop_on_error: true,
+          export_pdf: workflowExportPdf,
+          export_mcdx: workflowExportMcdx,
+        }}
+        onLoadWorkflow={handleLoadWorkflowLibrary}
       />
     </>
   )
