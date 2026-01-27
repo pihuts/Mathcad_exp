@@ -1,5 +1,6 @@
 import uuid
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
@@ -59,6 +60,21 @@ class WorkflowConfig(BaseModel):
     export_pdf: bool = True
     export_mcdx: bool = False
     output_dir: Optional[str] = None
+
+
+class BatchConfig(BaseModel):
+    """Complete batch configuration for library persistence"""
+    name: str = Field(..., min_length=1, max_length=100)
+    file_path: str  # Path to .mcdx file (will be stored as relative)
+    inputs: List[InputConfig]  # Reuse existing InputConfig dataclass
+    export_pdf: bool = True
+    export_mcdx: bool = False
+    output_dir: Optional[str] = None
+    created_at: str = Field(default_factory=lambda: datetime.now().isoformat())
+    version: str = "1.0"
+
+    # For relative path resolution
+    base_path: Optional[str] = None  # Resolved at load time
 
 
 class WorkflowStatus(str, Enum):
