@@ -21,6 +21,7 @@ function App() {
   const [aliases, setAliases] = useState<{ alias: string, name: string }[]>([])
   const [aliasConfigs, setAliasConfigs] = useState<Record<string, any[]>>({})
   const [aliasUnits, setAliasUnits] = useState<Record<string, string>>({})
+  const [aliasTypes, setAliasTypes] = useState<Record<string, 'number' | 'string'>>({})
   const [selectedAlias, setSelectedAlias] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -160,7 +161,11 @@ function App() {
     const values = Array.isArray(config) ? config : config.value;
     const units = Array.isArray(config) ? undefined : config.units;
 
+    // Detect input type based on value array contents
+    const isString = Array.isArray(values) ? typeof values[0] === 'string' : typeof values === 'string';
+
     setAliasConfigs(prev => ({ ...prev, [alias]: values }));
+    setAliasTypes(prev => ({ ...prev, [alias]: isString ? 'string' : 'number' }));
     if (units) {
       setAliasUnits(prev => ({ ...prev, [alias]: units }));
     }
@@ -183,11 +188,17 @@ function App() {
       // Add units to each input value
       const inputWithUnits: Record<string, any> = { path: filePath };
       for (const [key, value] of Object.entries(combo)) {
-        const units = aliasUnits[key];
-        if (units) {
-          inputWithUnits[key] = { value, units };
+        if (aliasTypes[key] === 'string') {
+          // String values: pass directly, no units wrapper
+          inputWithUnits[key] = value;  // Already a string
         } else {
-          inputWithUnits[key] = value;
+          // Numeric values: apply units if present
+          const units = aliasUnits[key];
+          if (units) {
+            inputWithUnits[key] = { value, units };
+          } else {
+            inputWithUnits[key] = value;
+          }
         }
       }
       return inputWithUnits;
