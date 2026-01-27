@@ -151,8 +151,8 @@ This roadmap delivers the Mathcad Automator in vertical slices, prioritizing the
 - [x] 03-04-PLAN.md — Add workflow TypeScript types to api.ts
 - [x] 03-05-PLAN.md — Create WorkflowBuilder component with drag-and-drop
 - [x] 03-06-PLAN.md — Create MappingModal for output-to-input mapping
-- [ ] 03-07-PLAN.md — Create useWorkflow hook for state management
-- [ ] 03-08-PLAN.md — Integrate workflow UI into App.tsx
+- [x] 03-07-PLAN.md — Create useWorkflow hook for state management
+- [x] 03-08-PLAN.md — Integrate workflow UI into App.tsx
 
 ---
 
@@ -160,7 +160,8 @@ This roadmap delivers the Mathcad Automator in vertical slices, prioritizing the
 
 **Goal:** Replace all file path text inputs with native Windows file browser dialogs for error-free file selection.
 **Depends on:** Phase 3
-**Plans:** 2 plans in 2 waves
+**Status:** ✅ Complete
+**Plans:** 2 plans in 2 waves (2/2 complete)
 
 **Rationale:** Current text input approach for file paths is error-prone and inconvenient. Users need to type or paste full file paths. A browse button with native file dialog provides better UX and reduces errors.
 
@@ -169,10 +170,37 @@ This roadmap delivers the Mathcad Automator in vertical slices, prioritizing the
 - Workflow file input (WorkflowBuilder.tsx)
 
 Plans:
-- [ ] 03.1-01-PLAN.md — Add backend file browse endpoint using tkinter native dialog
-- [ ] 03.1-02-PLAN.md — Replace text inputs with browse buttons in frontend components
+- [x] 03.1-01-PLAN.md — Add backend file browse endpoint using tkinter native dialog
+- [x] 03.1-02-PLAN.md — Replace text inputs with browse buttons in frontend components
 
 ---
+ 
+ ## Phase 3.2: Export Options (MCDX/PDF) (COMPLETE)
+
+ **Goal:** Add options to automatically export each calculation result as .mcdx and/or .pdf using MathcadPy.
+ **Depends on:** Phase 3.1
+ **Status:** ✅ Complete
+ **Completed:** 2026-01-27
+ **Plans:** 3 plans in 2 waves (3/3 complete)
+
+ **Rationale:** Users need to preserve the results of batch calculations in standard formats for reporting and archival.
+
+ ### Requirements
+ - **EXP-01**: UI options to select export formats (MCDX, PDF) in Batch tab.
+ - **EXP-02**: BatchManager logic to call save_as for each iteration based on selected formats.
+ - **EXP-03**: Workflow support for exporting final results of each file in the chain.
+
+ ### Success Criteria
+ 1. User can toggle MCDX and PDF export independently in the UI. ✓
+ 2. Running a batch with export enabled creates the corresponding files in the output directory. ✓
+ 3. Exported files follow a consistent naming pattern (e.g., BaseName_ParamName-Value.pdf). ✓
+
+ **Plans:**
+ - [x] 03.2-01-PLAN.md — Update backend models and manager logic for export options
+ - [x] 03.2-02-PLAN.md — Add export checkboxes to Batch and Workflow UI
+ - [x] 03.2-03-PLAN.md — End-to-end verification of export functionality (with performance optimizations)
+ 
+ ---
 
 ## Phase 4: Library & Persistence
 
@@ -217,9 +245,11 @@ Plans:
 | Phase | Status | Requirements |
 |-------|--------|--------------|
 | 1 - Core Engine | **Complete** | 6 |
-| 2 - Batch Processing | **In progress** (5/6 plans complete) | 13 |
+| 2 - Batch Processing | **Complete** | 13 |
 | 2.1 - MathcadPy Migration | **Complete** | 4 |
-| 2.2 - Input Units Specification | **In progress** (1/5 plans complete) | 4 |
-| 3 - Workflow | **In progress** (6/8 plans complete) | 3 |
+| 2.2 - Input Units Specification | **Complete** | 4 |
+| 3 - Workflow | **Complete** | 3 |
+| 3.1 - Browse Buttons | **Complete** | 2 |
+| 3.2 - Export Options | **Complete** | 3 |
 | 4 - Library | **Planned** | 2 |
 | 5 - Packaging | **Planned** | 2 |
