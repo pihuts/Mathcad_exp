@@ -6,10 +6,13 @@ Build with: pyinstaller main.spec --clean
 Output: dist/MathcadAutomator/
 """
 
-from PyInstaller.utils.hooks import collect_submodules
+from PyInstaller.utils.hooks import collect_submodules, collect_data_files
 
 # Collect all uvicorn submodules (many are dynamically imported)
 uvicorn_imports = collect_submodules('uvicorn')
+
+# Collect pywebview submodules
+webview_imports = collect_submodules('webview')
 
 # Additional hidden imports required for the application
 additional_imports = [
@@ -39,7 +42,18 @@ additional_imports = [
 
     # MathcadPy
     'MathcadPy',
+
+    # pywebview dependencies (Windows uses WinForms or EdgeChromium)
+    'webview',
+    'clr',  # pythonnet for WinForms
+    'System',
+    'System.Windows.Forms',
+    'System.Drawing',
+    'System.Threading',
 ]
+
+# Collect pywebview data files (lib folder contains platform-specific files)
+webview_datas = collect_data_files('webview')
 
 a = Analysis(
     ['main.py'],
@@ -48,8 +62,8 @@ a = Analysis(
     datas=[
         ('frontend/dist', 'frontend/dist'),  # Frontend static files
         ('src', 'src'),  # Source modules
-    ],
-    hiddenimports=uvicorn_imports + additional_imports,
+    ] + webview_datas,
+    hiddenimports=uvicorn_imports + webview_imports + additional_imports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
