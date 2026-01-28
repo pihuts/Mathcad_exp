@@ -141,13 +141,24 @@ function App() {
     exportMcdx: boolean;
   }) => {
     // Convert InputConfig[] back to aliasConfigs structure
+    // InputConfig has: { alias: "Input1", value: [1,2,3,4,5,6,7,8,9,10], units: "in" }
+    // Need to convert to: { "Input1": [1,2,3,4,5,6,7,8,9,10] }
     const newAliasConfigs: Record<string, any[]> = {};
+    const newAliasUnits: Record<string, string> = {};
 
     config.inputs.forEach((inputConfig) => {
-      newAliasConfigs[inputConfig.alias] = [{ value: inputConfig.value, units: inputConfig.units }];
+      // inputConfig.value is already an array like [1,2,3,4,5,6,7,8,9,10]
+      newAliasConfigs[inputConfig.alias] = Array.isArray(inputConfig.value)
+        ? inputConfig.value
+        : [inputConfig.value];
+
+      if (inputConfig.units) {
+        newAliasUnits[inputConfig.alias] = inputConfig.units;
+      }
     });
 
     setAliasConfigs(newAliasConfigs);
+    setAliasUnits(newAliasUnits);
     setExportPdf(config.exportPdf);
     setExportMcdx(config.exportMcdx);
   };
@@ -527,6 +538,7 @@ function App() {
         onClose={() => setLibraryOpened(false)}
         filePath={filePath}
         currentInputs={aliasConfigs}
+        currentUnits={aliasUnits}
         exportPdf={exportPdf}
         exportMcdx={exportMcdx}
         outputDir={undefined}

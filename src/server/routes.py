@@ -224,9 +224,10 @@ async def save_library_config(req: Dict[str, Any]):
         config_dir = mcdx_path.parent / f"{mcdx_path.stem}_configs"
         config_dir.mkdir(exist_ok=True)
 
-        # Sanitize config name for filename
+        # Sanitize config name for filename and normalize case for consistency
         safe_name = "".join(c for c in config.name if c.isalnum() or c in (' ', '-', '_')).strip()
-        config_file = config_dir / f"{safe_name}.json"
+        # Convert to lowercase to avoid case-sensitivity issues on Windows
+        config_file = config_dir / f"{safe_name.lower()}.json"
 
         # Convert to relative paths for portability
         config_dict = config.model_dump(mode='json')

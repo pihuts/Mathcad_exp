@@ -20,6 +20,7 @@ interface LibraryModalProps {
   onClose: () => void;
   filePath: string;
   currentInputs: Record<string, any[]>; // Current alias configs from App state
+  currentUnits?: Record<string, string>; // Units for each alias
   exportPdf: boolean;
   exportMcdx: boolean;
   outputDir?: string;
@@ -31,6 +32,7 @@ export const LibraryModal = ({
   onClose,
   filePath,
   currentInputs,
+  currentUnits = {},
   exportPdf,
   exportMcdx,
   outputDir,
@@ -66,15 +68,14 @@ export const LibraryModal = ({
     if (!saveName.trim()) return;
 
     // Convert currentInputs to InputConfig[]
-    const inputConfigs: InputConfig[] = Object.entries(currentInputs).flatMap(([alias, configs]) => {
-      const firstConfig = configs[0];
-      if (!firstConfig) return [];
+    // currentInputs structure: { "Input1": [1,2,3,4,5,6,7,8,9,10], "Input2": [5,10,15] }
+    // currentUnits structure: { "Input1": "in", "Input2": "ft" }
+    // Need to convert to: [{ alias: "Input1", value: [1,2,3,4,5,6,7,8,9,10], units: "in" }, ...]
+    const inputConfigs: InputConfig[] = Object.entries(currentInputs).flatMap(([alias, values]) => {
+      if (!values || values.length === 0) return [];
 
-      // Handle both InputConfig objects and plain values
-      if (typeof firstConfig === 'object' && 'value' in firstConfig) {
-        return [{ alias, value: firstConfig.value, units: firstConfig.units }];
-      }
-      return [{ alias, value: firstConfig }];
+      // The entire values array IS the value to save
+      return [{ alias, value: values, units: currentUnits[alias] }];
     });
 
     const configRequest = {
