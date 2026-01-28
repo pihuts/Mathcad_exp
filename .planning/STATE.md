@@ -5,12 +5,12 @@
 
 ## Current Position
 
-**Phase:** 4 - Library & Persistence
-**Plan:** 4 of 6 in current phase
+**Phase:** 3.4 - Multi-Value String Inputs
+**Plan:** 1 of 2 in current phase
 **Status:** In progress
-**Last activity:** 2026-01-27 - Completed Plan 04-04 (Library UI modal with save/load functionality).
+**Last activity:** 2026-01-28 - Completed Plan 03.4-01 (Multi-value string List tab with deduplication and iteration breakdown tooltip).
 
-Progress: ████████████████░░░ 94% (30/31 plans complete)
+Progress: ████████████████░░░ 94% (31/32 plans complete)
 
 | Phase | Goal | Status |
 |-------|------|--------|
@@ -22,6 +22,7 @@ Progress: ████████████████░░░ 94% (30/31 p
 | **3.1 Browse Buttons** | **Native file dialogs for file selection** | **Complete** |
 | **3.2 Export Options** | **MCDX/PDF export options** | **Complete** |
 | **3.3 String Inputs** | **Support for string-type inputs** | **Complete** |
+| **3.4 Multi-Value String Inputs** | **List tab entry with deduplication** | **In progress** |
 | 4. Library | Configuration persistence | In progress |
 | 5. Packaging | Standalone distribution | Pending |
 
@@ -56,6 +57,8 @@ Progress: ████████████████░░░ 94% (30/31 p
 - **Library List/Load (04-02):** Implemented GET /library/list endpoint for browsing saved configs (returns metadata only). Implemented POST /library/load endpoint for loading configs with path resolution (relative to absolute). Uses BatchConfig.model_validate() for validation.
 - **Frontend Library API (04-03):** Created TypeScript interfaces in api.ts matching backend schemas exactly (LibraryConfigMetadata, ListLibraryConfigsResponse, SaveLibraryConfigRequest, SaveLibraryConfigResponse, LoadLibraryConfigRequest, LoadLibraryConfigResponse). Implemented saveLibraryConfig, listLibraryConfigs, loadLibraryConfig API functions using axios. Created useLibrary React Query hook with 5-minute cache, automatic invalidation after save, and loading/error states for UI binding.
 - **Library UI Modal (04-04):** Created LibraryModal component with two-tab design (Save/Load) for configuration management. Save tab has name input with save button and success badge; Load tab displays table of saved configs with load buttons. Added Library button to Batch tab with IconFolder icon. Implemented handleLoadLibraryConfig function to convert loaded configs back to aliasConfigs structure. Used IconDeviceFloppy instead of IconSave (doesn't exist in @tabler/icons-react). Refetch configs when modal opens for fresh list. Auto-close modal 1.5s after successful save.
+- **Multi-Value String List Tab (03.4-01):** Added List tab to InputModal for string type with textarea entry (one value per line). Implemented silent deduplication using Set for both List tab and CSV string modes. Added unique value count preview that updates live as user types. Changed default tab for string type from 'single' to 'list' since multi-value entry is the primary use case. Used split(/\r?\n/) regex for cross-platform line ending handling (Windows CRLF and Unix LF).
+- **Iteration Breakdown Tooltip (03.4-01):** Added iterationBreakdown useMemo showing per-input counts, types (string/number), and multiplication formula. Replaced Total Iterations Text with conditional Tooltip wrapper featuring dotted underline and help cursor. Enhanced handleLoadLibraryConfig to restore aliasTypes via typeof detection on array elements for correct type labels in iteration tooltip.
 - **Batch Threading:** BatchManager uses a background thread to prevent blocking the FastAPI event loop.
 - **InputConfig Dataclass:** Added to protocol.py for type-safe, units-aware input configuration.
 - **Workflow Data Models:** Added FileMapping, WorkflowFile, WorkflowConfig (Pydantic BaseModels).
@@ -71,6 +74,7 @@ Progress: ████████████████░░░ 94% (30/31 p
 - Phase 3.1 inserted after Phase 3: Replace text inputs with browse buttons (COMPLETED) - Implemented native file browsing.
 - Phase 3.2 inserted after Phase 3.1: Export Options (MCDX/PDF) (COMPLETED) - Implemented dynamic naming and native file opening.
 - Phase 3.3 added: String Inputs - Support for string-type inputs in addition to numeric inputs (COMPLETED).
+- Phase 3.4 added: Multi-Value String Inputs - List tab with textarea entry and deduplication (In Progress) - 1 of 2 plans complete.
 - Phase 4: Library & Persistence (In Progress) - 4 of 6 plans complete.
 
 ### Performance Metrics
@@ -80,21 +84,19 @@ Progress: ████████████████░░░ 94% (30/31 p
 
 ## Session Continuity
 
-**Session:** 2026-01-27 - Present
-**Stopped at:** Completed Phase 04-04 (Library UI modal with save/load functionality)
+**Session:** 2026-01-28 - Present
+**Stopped at:** Completed Phase 03.4-01 (Multi-value string List tab with deduplication and iteration breakdown tooltip)
 **Resume file:** None
 
 ### Last Session
-- Executed Plan 04-02 (Backend library list/load API).
-- Implemented GET /library/list endpoint for browsing saved configs (returns metadata).
-- Implemented POST /library/load endpoint with path resolution (relative to absolute).
-- Added LibraryConfigMetadata, ListLibraryConfigsResponse, LoadLibraryConfigRequest schemas.
-- Integrated with BatchConfig.model_validate() for validation.
-- All verification tests passed - backend library API complete.
+- Executed Plan 03.4-01 (Multi-value string input support).
+- Added List tab to InputModal with textarea entry (one value per line).
+- Implemented silent deduplication using Set for both List and CSV string modes.
+- Added iteration breakdown tooltip showing per-input counts, types, and multiplication formula.
+- Enhanced handleLoadLibraryConfig to restore aliasTypes for correct type labels.
+- TypeScript compilation passes cleanly.
 
 ### Next Steps
-1. **Next:** Plan 04-04 - Library UI component (LibraryModal with save/load/delete)
-2. Then Plan 04-05 - Library autocomplete and search
-3. Then Plan 04-06 - End-to-end verification
-4. Or Phase 5 - Packaging (Standalone distribution)
-5. Frontend library API and hook complete - ready for UI integration
+1. **Next:** Plan 03.4-02 (if exists) or continue with Phase 4 - Library & Persistence
+2. Phase 4 Plans 04-05, 04-06 - Library autocomplete, search, and E2E verification
+3. Then Phase 5 - Packaging (Standalone distribution)
