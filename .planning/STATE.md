@@ -5,12 +5,12 @@
 
 ## Current Position
 
-**Phase:** 05 - Production Packaging
-**Plan:** 04 of 04 in current phase
+**Phase:** 05.1 - Documentation Overhaul
+**Plan:** 01 of 01 in current phase
 **Status:** Phase complete
-**Last activity:** 2026-01-28 - Completed Plan 05-04 (Polish for Distribution).
+**Last activity:** 2026-01-28 - Completed Plan 05.1-01 (Documentation Creation).
 
-Progress: ██████████████████ 100% (35/35 plans complete)
+Progress: ██████████████████ 100% (36/36 plans complete)
 
 | Phase | Goal | Status |
 |-------|------|--------|
@@ -25,6 +25,7 @@ Progress: ██████████████████ 100% (35/35 pla
 | **3.4 Multi-Value String Inputs** | **List tab entry with deduplication** | **Complete** |
 | **4. Library** | **Configuration persistence** | **Complete** |
 | **5. Packaging** | **Standalone distribution** | **Complete** |
+| **5.1 Documentation** | **User documentation** | **Complete** |
 
 ## Context & Memory
 
@@ -34,6 +35,7 @@ Progress: ██████████████████ 100% (35/35 pla
 - **Risk:** None currently.
 
 ### Recent Decisions
+- **Documentation Creation (05.1-01):** Created comprehensive README.md (566 lines) with Features, Installation, Quick Start, Usage Guide, Troubleshooting, and Examples sections. Quick Start appears before Installation to motivate users. Installation covers .exe (primary) and source (secondary). Usage guide covers all 4 features (Batch, Workflow, Library, Export). Troubleshooting organized by error message with 6 common errors. Examples include 4 detailed scenarios with captions. ASCII flowcharts for batch and workflow processes. Created dist/README.md (84 lines) for .exe users and docs/README.md for screenshot capture instructions.
 - **Polish for Distribution (05-04):** Implemented AppData storage (%LOCALAPPDATA%\MathcadAutomator) with get_app_data_dir(), get_log_dir(), get_library_dir() functions. Added window persistence via load_window_config() and save_window_config() storing width, height, x, y in JSON. Created placeholder application icon (assets/icon.ico). Updated main.spec with console=False (no console window) and icon configuration. Built production executable (17.5 MB) and distribution package (144 MB ZIP). Added /api/v1/app-info endpoint for data directory discovery.
 - **Process Lifecycle Management (05-03):** Implemented Mathcad Prime detection via Windows registry (both HKEY_LOCAL_MACHINE and Wow6432Node paths). Added /api/v1/status endpoint for operation state tracking. Close confirmation dialog via window.evaluate_js('confirm(...)'). Graceful shutdown with terminate(5s timeout) then kill(). psutil for orphaned Mathcad process cleanup. atexit.register() for unexpected exit cleanup.
 - **WinReg Mathcad Detection:** Check both 64-bit (SOFTWARE\PTC\Mathcad Prime) and 32-bit (Wow6432Node) registry paths. Returns (installed, version, install_path) tuple. Native MessageBoxW error dialog if not found with PTC website link.
@@ -86,6 +88,7 @@ Progress: ██████████████████ 100% (35/35 pla
 - Phase 3.4 added: Multi-Value String Inputs - List tab with textarea entry and deduplication (Complete).
 - Phase 4: Library & Persistence (Complete).
 - Phase 5: Production Packaging (Complete).
+- Phase 5.1: Documentation Overhaul (Complete).
 
 ### Performance Metrics
 - **Requirements Covered:** 100% (Phase 1), 100% (Phase 2), 100% (Phase 3.1)
@@ -99,17 +102,14 @@ Progress: ██████████████████ 100% (35/35 pla
 **Resume file:** None
 
 ### Last Session
-- Executed Plan 05-04 (Polish for Distribution).
-- Added AppData storage functions: get_app_data_dir(), get_log_dir(), get_library_dir() to main.py and src/server/main.py.
-- Implemented window persistence: load_window_config() and save_window_config() for position/size between sessions.
-- Created placeholder application icon (assets/icon.ico) using PIL.
-- Updated main.spec with console=False (no console window) and icon configuration.
-- Built production executable (17.5 MB) and distribution package (MathcadAutomator-v1.0.0.zip, 144 MB).
-- Added /api/v1/app-info endpoint for data directory discovery.
-- All 35 plans across 5 phases complete.
+- Executed Plan 05.1-01 (Documentation Creation).
+- Created comprehensive README.md (566 lines) with all required sections.
+- Created dist/README.md (84 lines) for .exe distribution.
+- Created docs/README.md for screenshot capture instructions.
+- All 36 plans across 5 phases complete.
 
 ### Next Steps
-**Project Complete!** All 35 plans across 5 phases have been successfully implemented.
+**Project Complete!** All 36 plans across 5 phases have been successfully implemented.
 
 **Production Deliverables:**
 - Distribution package: dist/MathcadAutomator-v1.0.0.zip (144 MB)
@@ -117,8 +117,10 @@ Progress: ██████████████████ 100% (35/35 pla
 - User data storage: %LOCALAPPDATA%\MathcadAutomator
 - Window position/size persistence
 - Application icon (placeholder - recommend professional design for production)
+- Comprehensive documentation: README.md (566 lines)
 
 **Future Enhancements (v2):**
+- Capture actual screenshots for documentation
 - Professional icon design
 - Code signing certificate to avoid SmartScreen warnings
 - Installer (NSIS, Inno Setup)

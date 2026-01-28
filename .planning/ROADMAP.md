@@ -318,6 +318,31 @@ Plans:
 
 ---
 
+## Phase 5.1: Documentation Overhaul (COMPLETE)
+
+**Goal:** Create comprehensive user documentation including installation guide, how-to tutorials, troubleshooting, and examples to make the Mathcad Automator application easy to use for non-technical engineers.
+**Focus:** User documentation, README, distribution guide
+**Status:** Complete
+**Completed:** 2026-01-28
+**Plans:** 1 plan in 1 wave (1/1 complete)
+
+### Dependencies
+- Phase 5 (Production Packaging complete)
+
+### Success Criteria
+1. Comprehensive README.md exists with all required sections
+2. Installation instructions for both .exe (primary) and source (secondary)
+3. Quick Start guide that motivates users before technical details
+4. Usage guide covering all major features (Batch, Workflow, Library, Export)
+5. Troubleshooting organized by error message
+6. Examples with captions
+7. Distribution README for .exe users
+
+**Plans:**
+- [x] 05.1-01-PLAN.md — Create comprehensive user documentation (README.md, dist/README.md, docs/README.md)
+
+---
+
 ## Progress
 
 | Phase | Status | Requirements |
@@ -333,3 +358,4 @@ Plans:
 | 3.4 - Multi-Value String Inputs | **Complete** | 4 |
 | 4 - Library & Persistence | **Complete** | 4 |
 | 5 - Production Packaging | **Complete** | 2 |
+| 5.1 - Documentation Overhaul | **Complete** | 0 |
