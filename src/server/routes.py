@@ -461,3 +461,32 @@ async def load_workflow_config(req: Dict[str, Any]):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@router.get("/status")
+async def get_operation_status():
+    """
+    Get current operation status for close confirmation.
+    Returns whether any batch or workflow operation is in progress.
+    """
+    manager = get_engine_manager()
+
+    # Check batch operations
+    batch_running = False
+    for batch_id, batch in manager.batch_manager.batches.items():
+        if batch.get("status") == "running":
+            batch_running = True
+            break
+
+    # Check workflow operations
+    workflow_running = False
+    for workflow_id, workflow in manager.workflow_manager.workflows.items():
+        if workflow.get("status") == "running":
+            workflow_running = True
+            break
+
+    return {
+        "batch_running": batch_running,
+        "workflow_running": workflow_running,
+        "operation_in_progress": batch_running or workflow_running
+    }
+
