@@ -5,12 +5,12 @@
 
 ## Current Position
 
-**Phase:** 3.4 - Multi-Value String Inputs
-**Plan:** 1 of 2 in current phase
+**Phase:** 05 - Production Packaging
+**Plan:** 01 of 04 in current phase
 **Status:** In progress
-**Last activity:** 2026-01-28 - Completed Plan 03.4-01 (Multi-value string List tab with deduplication and iteration breakdown tooltip).
+**Last activity:** 2026-01-28 - Completed Plan 05-01 (PyInstaller basic integration with onedir executable build).
 
-Progress: ████████████████░░░ 94% (31/32 plans complete)
+Progress: ████████████████░░░ 97% (32/33 plans complete)
 
 | Phase | Goal | Status |
 |-------|------|--------|
@@ -22,9 +22,9 @@ Progress: ████████████████░░░ 94% (31/32 p
 | **3.1 Browse Buttons** | **Native file dialogs for file selection** | **Complete** |
 | **3.2 Export Options** | **MCDX/PDF export options** | **Complete** |
 | **3.3 String Inputs** | **Support for string-type inputs** | **Complete** |
-| **3.4 Multi-Value String Inputs** | **List tab entry with deduplication** | **In progress** |
-| 4. Library | Configuration persistence | In progress |
-| 5. Packaging | Standalone distribution | Pending |
+| **3.4 Multi-Value String Inputs** | **List tab entry with deduplication** | **Complete** |
+| **4. Library** | **Configuration persistence** | **Complete** |
+| **5. Packaging** | **Standalone distribution** | **In progress** |
 
 ## Context & Memory
 
@@ -34,6 +34,9 @@ Progress: ████████████████░░░ 94% (31/32 p
 - **Risk:** None currently.
 
 ### Recent Decisions
+- **PyInstaller Configuration (05-01):** Created main.py entry point with freeze_support() and resource_path() helper. Configured main.spec with uvicorn collect_submodules(), hidden imports for pywin32/comtypes, and onedir mode to reduce antivirus false positives. Updated src/server/main.py with get_frontend_path() for PyInstaller/dev detection and added /health endpoint.
+- **Packaging Dependencies (05-01):** Added pyinstaller>=6.0.0, pywebview>=5.0.0, and psutil>=5.9.0 to requirements.txt.
+- **OneDir Bundle Mode:** Use onedir (folder-based) distribution instead of onefile to reduce antivirus false positives and improve startup time.
 - **String Input Verification Complete:** End-to-end testing confirmed string input functionality working correctly in both batch and workflow modes with no numeric input regressions.
 - **Type Detection via typeof:** Use typeof on first array element instead of explicit inputType field in InputConfig - keeps pipeline simple, YAGNI principle.
 - **String Single Value Array Wrapping:** Wrap single string values in array [stringValue] for consistency with batch pipeline cartesian product logic.
@@ -74,8 +77,9 @@ Progress: ████████████████░░░ 94% (31/32 p
 - Phase 3.1 inserted after Phase 3: Replace text inputs with browse buttons (COMPLETED) - Implemented native file browsing.
 - Phase 3.2 inserted after Phase 3.1: Export Options (MCDX/PDF) (COMPLETED) - Implemented dynamic naming and native file opening.
 - Phase 3.3 added: String Inputs - Support for string-type inputs in addition to numeric inputs (COMPLETED).
-- Phase 3.4 added: Multi-Value String Inputs - List tab with textarea entry and deduplication (In Progress) - 1 of 2 plans complete.
-- Phase 4: Library & Persistence (In Progress) - 4 of 6 plans complete.
+- Phase 3.4 added: Multi-Value String Inputs - List tab with textarea entry and deduplication (Complete).
+- Phase 4: Library & Persistence (Complete).
+- Phase 5: Production Packaging (In Progress) - 1 of 4 plans complete.
 
 ### Performance Metrics
 - **Requirements Covered:** 100% (Phase 1), 100% (Phase 2), 100% (Phase 3.1)
@@ -85,18 +89,16 @@ Progress: ████████████████░░░ 94% (31/32 p
 ## Session Continuity
 
 **Session:** 2026-01-28 - Present
-**Stopped at:** Completed Phase 03.4-01 (Multi-value string List tab with deduplication and iteration breakdown tooltip)
+**Stopped at:** Completed Phase 05-01 (PyInstaller basic integration with onedir executable build)
 **Resume file:** None
 
 ### Last Session
-- Executed Plan 03.4-01 (Multi-value string input support).
-- Added List tab to InputModal with textarea entry (one value per line).
-- Implemented silent deduplication using Set for both List and CSV string modes.
-- Added iteration breakdown tooltip showing per-input counts, types, and multiplication formula.
-- Enhanced handleLoadLibraryConfig to restore aliasTypes for correct type labels.
-- TypeScript compilation passes cleanly.
+- Executed Plan 05-01 (PyInstaller basic integration).
+- All configuration files already existed from prior development (main.py, main.spec, updated src/server/main.py, requirements.txt).
+- Built frontend with `npm run build` - generated dist/ with index.html and bundled assets.
+- Built executable with `pyinstaller main.spec --clean` - created dist/MathcadAutomator/MathcadAutomator.exe (22 MB).
+- Verified frontend path detection works correctly (returns D:\Mathcad_exp\frontend\dist).
 
 ### Next Steps
-1. **Next:** Plan 03.4-02 (if exists) or continue with Phase 4 - Library & Persistence
-2. Phase 4 Plans 04-05, 04-06 - Library autocomplete, search, and E2E verification
-3. Then Phase 5 - Packaging (Standalone distribution)
+1. **Next:** Plan 05-02 (pywebview Integration) - Add native window with multiprocessing architecture
+2. Phase 5 Plans 05-03, 05-04 - Process lifecycle management and polish for distribution
