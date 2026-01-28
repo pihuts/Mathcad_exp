@@ -233,7 +233,7 @@ Plans:
 **Goal:** String inputs support multiple values (List, CSV) similar to numeric Range/List functionality.
 **Depends on:** Phase 3.3
 **Status:** Planned
-**Plans:** TBD
+**Plans:** 2 plans in 2 waves
 
 **Rationale:** Current string input implementation only allows single value entry. Engineers need to provide multiple string values for batch operations (e.g., testing multiple material names, different configuration labels, etc.). This brings string inputs to feature parity with numeric inputs.
 
@@ -249,6 +249,10 @@ Plans:
 3. Batch preview shows all string value combinations alongside numeric ranges
 4. Single-value string input behavior is unchanged (no regression)
 5. Multi-value strings work correctly in both Batch and Workflow contexts
+
+Plans:
+- [ ] 03.4-01-PLAN.md — Add List tab to InputModal with textarea entry, deduplication, and iteration breakdown tooltip
+- [ ] 03.4-02-PLAN.md — End-to-end verification of multi-value string input functionality
 
 ---
 
