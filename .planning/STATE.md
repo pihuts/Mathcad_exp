@@ -6,11 +6,11 @@
 ## Current Position
 
 **Phase:** 05 - Production Packaging
-**Plan:** 02 of 04 in current phase
+**Plan:** 03 of 04 in current phase
 **Status:** In progress
-**Last activity:** 2026-01-28 - Completed Plan 05-02 (pywebview Integration with native desktop window).
+**Last activity:** 2026-01-28 - Completed Plan 05-03 (Process Lifecycle Management).
 
-Progress: ████████████████░░░ 97% (33/34 plans complete)
+Progress: █████████████████░ 99% (34/35 plans complete)
 
 | Phase | Goal | Status |
 |-------|------|--------|
@@ -34,6 +34,8 @@ Progress: ████████████████░░░ 97% (33/34 p
 - **Risk:** None currently.
 
 ### Recent Decisions
+- **Process Lifecycle Management (05-03):** Implemented Mathcad Prime detection via Windows registry (both HKEY_LOCAL_MACHINE and Wow6432Node paths). Added /api/v1/status endpoint for operation state tracking. Close confirmation dialog via window.evaluate_js('confirm(...)'). Graceful shutdown with terminate(5s timeout) then kill(). psutil for orphaned Mathcad process cleanup. atexit.register() for unexpected exit cleanup.
+- **WinReg Mathcad Detection:** Check both 64-bit (SOFTWARE\PTC\Mathcad Prime) and 32-bit (Wow6432Node) registry paths. Returns (installed, version, install_path) tuple. Native MessageBoxW error dialog if not found with PTC website link.
 - **pywebview Integration (05-02):** Implemented native desktop window using pywebview.create_window(). Server runs in multiprocessing.Process with wait_for_server() health check before UI launch. Window closure triggers server termination (terminate/kill sequence). Bundled webview, pythonnet, clr_loader, and WebView2 DLLs in PyInstaller spec.
 - **Multiprocessing Architecture:** Main process manages pywebview GUI, subprocess runs FastAPI server. Clean separation enables proper lifecycle management and graceful shutdown.
 - **urllib for Health Check:** Used urllib.request for server readiness polling (no external dependencies). Polls /health endpoint every 0.3s for up to 30s.
@@ -82,7 +84,7 @@ Progress: ████████████████░░░ 97% (33/34 p
 - Phase 3.3 added: String Inputs - Support for string-type inputs in addition to numeric inputs (COMPLETED).
 - Phase 3.4 added: Multi-Value String Inputs - List tab with textarea entry and deduplication (Complete).
 - Phase 4: Library & Persistence (Complete).
-- Phase 5: Production Packaging (In Progress) - 2 of 4 plans complete.
+- Phase 5: Production Packaging (In Progress) - 3 of 4 plans complete.
 
 ### Performance Metrics
 - **Requirements Covered:** 100% (Phase 1), 100% (Phase 2), 100% (Phase 3.1)
@@ -92,17 +94,17 @@ Progress: ████████████████░░░ 97% (33/34 p
 ## Session Continuity
 
 **Session:** 2026-01-28 - Present
-**Stopped at:** Completed Phase 05-02 (pywebview Integration with native desktop window)
+**Stopped at:** Completed Phase 05-03 (Process Lifecycle Management)
 **Resume file:** None
 
 ### Last Session
-- Executed Plan 05-02 (pywebview Integration).
-- Updated main.py with multiprocessing architecture: server_process runs FastAPI, webview.create_window() displays native GUI.
-- Added wait_for_server() function using urllib for health check polling before UI launch.
-- Updated main.spec with collect_submodules('webview'), collect_data_files('webview'), pythonnet/WinForms imports.
-- Built executable (24.5 MB) with webview, pythonnet, clr_loader, and WebView2 DLLs bundled.
-- Expected build warnings (System.* modules, bottle conditional) are normal and don't affect functionality.
+- Executed Plan 05-03 (Process Lifecycle Management).
+- Added GET /api/v1/status endpoint to routes.py for operation state tracking.
+- Updated main.py with comprehensive lifecycle management: detect_mathcad(), check_operation_in_progress(), cleanup_mathcad_processes(), on_closing(), on_closed(), atexit.register().
+- Mathcad detection via Windows registry checks both HKEY_LOCAL_MACHINE and Wow6432Node paths.
+- Close confirmation uses window.evaluate_js('confirm(...)') for cross-platform dialog.
+- Process cleanup uses psutil.process_iter() for Mathcad enumeration and termination.
 
 ### Next Steps
-1. **Next:** Plan 05-03 (Process Lifecycle) - Implement dirty state checking and graceful shutdown
-2. Phase 5 Plan 05-04 - Polish for distribution (console window, icons, final testing)
+1. **Next:** Plan 05-04 (Polish for Distribution) - Console window hiding, icon packaging, final testing
+2. Final distribution build and testing
