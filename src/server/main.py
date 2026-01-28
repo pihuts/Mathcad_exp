@@ -1,11 +1,29 @@
 import sys
 import os
+import json
 from pathlib import Path
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from .dependencies import get_engine_manager
 from .routes import router
+
+
+def get_app_data_dir() -> str:
+    """
+    Get the application data directory for user-specific data.
+    Mirrors the function in main.py for backend access.
+    """
+    if getattr(sys, 'frozen', False):
+        appdata = os.environ.get('LOCALAPPDATA')
+        if not appdata:
+            appdata = os.path.expanduser('~\\AppData\\Local')
+        app_dir = os.path.join(appdata, 'MathcadAutomator')
+    else:
+        app_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'data')
+
+    os.makedirs(app_dir, exist_ok=True)
+    return app_dir
 
 
 def get_frontend_path() -> Path:
@@ -43,6 +61,16 @@ app.include_router(router, prefix="/api/v1")
 def health_check():
     """Health check endpoint for startup verification."""
     return {"status": "healthy"}
+
+
+@app.get("/api/v1/app-info")
+def get_app_info():
+    """Return application information and paths."""
+    return {
+        "version": "1.0.0",
+        "app_data_dir": get_app_data_dir(),
+        "library_dir": os.path.join(get_app_data_dir(), 'libraries'),
+    }
 
 
 @app.get("/")
