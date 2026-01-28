@@ -6,11 +6,11 @@
 ## Current Position
 
 **Phase:** 05 - Production Packaging
-**Plan:** 01 of 04 in current phase
+**Plan:** 02 of 04 in current phase
 **Status:** In progress
-**Last activity:** 2026-01-28 - Completed Plan 05-01 (PyInstaller basic integration with onedir executable build).
+**Last activity:** 2026-01-28 - Completed Plan 05-02 (pywebview Integration with native desktop window).
 
-Progress: ████████████████░░░ 97% (32/33 plans complete)
+Progress: ████████████████░░░ 97% (33/34 plans complete)
 
 | Phase | Goal | Status |
 |-------|------|--------|
@@ -34,6 +34,9 @@ Progress: ████████████████░░░ 97% (32/33 p
 - **Risk:** None currently.
 
 ### Recent Decisions
+- **pywebview Integration (05-02):** Implemented native desktop window using pywebview.create_window(). Server runs in multiprocessing.Process with wait_for_server() health check before UI launch. Window closure triggers server termination (terminate/kill sequence). Bundled webview, pythonnet, clr_loader, and WebView2 DLLs in PyInstaller spec.
+- **Multiprocessing Architecture:** Main process manages pywebview GUI, subprocess runs FastAPI server. Clean separation enables proper lifecycle management and graceful shutdown.
+- **urllib for Health Check:** Used urllib.request for server readiness polling (no external dependencies). Polls /health endpoint every 0.3s for up to 30s.
 - **PyInstaller Configuration (05-01):** Created main.py entry point with freeze_support() and resource_path() helper. Configured main.spec with uvicorn collect_submodules(), hidden imports for pywin32/comtypes, and onedir mode to reduce antivirus false positives. Updated src/server/main.py with get_frontend_path() for PyInstaller/dev detection and added /health endpoint.
 - **Packaging Dependencies (05-01):** Added pyinstaller>=6.0.0, pywebview>=5.0.0, and psutil>=5.9.0 to requirements.txt.
 - **OneDir Bundle Mode:** Use onedir (folder-based) distribution instead of onefile to reduce antivirus false positives and improve startup time.
@@ -79,7 +82,7 @@ Progress: ████████████████░░░ 97% (32/33 p
 - Phase 3.3 added: String Inputs - Support for string-type inputs in addition to numeric inputs (COMPLETED).
 - Phase 3.4 added: Multi-Value String Inputs - List tab with textarea entry and deduplication (Complete).
 - Phase 4: Library & Persistence (Complete).
-- Phase 5: Production Packaging (In Progress) - 1 of 4 plans complete.
+- Phase 5: Production Packaging (In Progress) - 2 of 4 plans complete.
 
 ### Performance Metrics
 - **Requirements Covered:** 100% (Phase 1), 100% (Phase 2), 100% (Phase 3.1)
@@ -89,16 +92,17 @@ Progress: ████████████████░░░ 97% (32/33 p
 ## Session Continuity
 
 **Session:** 2026-01-28 - Present
-**Stopped at:** Completed Phase 05-01 (PyInstaller basic integration with onedir executable build)
+**Stopped at:** Completed Phase 05-02 (pywebview Integration with native desktop window)
 **Resume file:** None
 
 ### Last Session
-- Executed Plan 05-01 (PyInstaller basic integration).
-- All configuration files already existed from prior development (main.py, main.spec, updated src/server/main.py, requirements.txt).
-- Built frontend with `npm run build` - generated dist/ with index.html and bundled assets.
-- Built executable with `pyinstaller main.spec --clean` - created dist/MathcadAutomator/MathcadAutomator.exe (22 MB).
-- Verified frontend path detection works correctly (returns D:\Mathcad_exp\frontend\dist).
+- Executed Plan 05-02 (pywebview Integration).
+- Updated main.py with multiprocessing architecture: server_process runs FastAPI, webview.create_window() displays native GUI.
+- Added wait_for_server() function using urllib for health check polling before UI launch.
+- Updated main.spec with collect_submodules('webview'), collect_data_files('webview'), pythonnet/WinForms imports.
+- Built executable (24.5 MB) with webview, pythonnet, clr_loader, and WebView2 DLLs bundled.
+- Expected build warnings (System.* modules, bottle conditional) are normal and don't affect functionality.
 
 ### Next Steps
-1. **Next:** Plan 05-02 (pywebview Integration) - Add native window with multiprocessing architecture
-2. Phase 5 Plans 05-03, 05-04 - Process lifecycle management and polish for distribution
+1. **Next:** Plan 05-03 (Process Lifecycle) - Implement dirty state checking and graceful shutdown
+2. Phase 5 Plan 05-04 - Polish for distribution (console window, icons, final testing)
