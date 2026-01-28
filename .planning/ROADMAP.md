@@ -223,8 +223,32 @@ Plans:
 4. Numeric input behavior is completely unchanged (no regression)
 
 **Plans:**
-- [ ] 03.3-01-PLAN.md — Add type selector to InputModal and update App.tsx pipeline for string preservation
-- [ ] 03.3-02-PLAN.md — End-to-end verification of string input functionality
+- [x] 03.3-01-PLAN.md — Add type selector to InputModal and update App.tsx pipeline for string preservation
+- [x] 03.3-02-PLAN.md — End-to-end verification of string input functionality
+
+---
+
+## Phase 3.4: Multi-Value String Inputs (INSERTED)
+
+**Goal:** String inputs support multiple values (List, CSV) similar to numeric Range/List functionality.
+**Depends on:** Phase 3.3
+**Status:** Planned
+**Plans:** TBD
+
+**Rationale:** Current string input implementation only allows single value entry. Engineers need to provide multiple string values for batch operations (e.g., testing multiple material names, different configuration labels, etc.). This brings string inputs to feature parity with numeric inputs.
+
+### Requirements
+- **MSTR-01**: Add "List" tab to string input modal for entering multiple discrete values
+- **MSTR-02**: Support CSV column upload for string lists (already works, needs UI clarity)
+- **MSTR-03**: Display preview of string value combinations in batch preview
+- **MSTR-04**: Maintain backward compatibility with single-value string inputs
+
+### Success Criteria
+1. User can enter multiple string values manually via List tab (comma-separated or line-separated)
+2. String CSV columns correctly generate multiple iterations in batch mode
+3. Batch preview shows all string value combinations alongside numeric ranges
+4. Single-value string input behavior is unchanged (no regression)
+5. Multi-value strings work correctly in both Batch and Workflow contexts
 
 ---
 
@@ -293,8 +317,6 @@ Plans:
 | 3.1 - Browse Buttons | **Complete** | 2 |
 | 3.2 - Export Options | **Complete** | 3 |
 | 3.3 - String Inputs | **Complete** | 4 |
+| 3.4 - Multi-Value String Inputs | **Planned** | 4 |
 | 4 - Library & Persistence | **In Progress** | 4 |
 | 5 - Production Packaging | **Planned** | 2 |
-| 3.3 - String Inputs | **Planned** | 4 |
-| 4 - Library | **Planned** | 2 |
-| 5 - Packaging | **Planned** | 2 |
