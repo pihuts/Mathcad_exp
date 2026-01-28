@@ -1,4 +1,4 @@
-import { Modal, NumberInput, Button, Stack, Group, Tabs, FileInput, Text, Select, SegmentedControl, TextInput } from '@mantine/core'
+import { Modal, NumberInput, Button, Stack, Group, Tabs, FileInput, Text, Select, SegmentedControl, TextInput, Textarea } from '@mantine/core'
 import { useState, useEffect } from 'react'
 import { generateRange } from '../utils/generators'
 import { parseCSV, getHeaders } from '../utils/csv_parser'
@@ -41,6 +41,7 @@ export const InputModal = ({ opened, onClose, alias, onSave }: InputModalProps) 
 
   // String state
   const [stringValue, setStringValue] = useState<string>('')
+  const [listValues, setListValues] = useState<string>('')
 
   // CSV state
   const [csvFile, setCsvFile] = useState<File | null>(null)
@@ -63,7 +64,7 @@ export const InputModal = ({ opened, onClose, alias, onSave }: InputModalProps) 
   // Reset activeTab when inputType changes
   useEffect(() => {
     if (inputType === 'string') {
-      setActiveTab('single');
+      setActiveTab('list');
     } else if (inputType === 'number') {
       setActiveTab('range');
     }
@@ -85,10 +86,19 @@ export const InputModal = ({ opened, onClose, alias, onSave }: InputModalProps) 
         const trimmed = stringValue.trim();
         if (trimmed === '') return; // Don't save empty strings
         value = [trimmed];
+      } else if (activeTab === 'list') {
+        const rawValues = listValues
+          .split(/\r?\n/)
+          .map(v => v.trim())
+          .filter(v => v.length > 0);
+        value = [...new Set(rawValues)];
+        if (value.length === 0) return;
       } else if (activeTab === 'csv' && selectedHeader && csvData.length > 0) {
-        value = csvData.map(row => String(row[selectedHeader]).trim());
-        // Validate no empty strings
-        if (value.some((v: string) => v === '')) return;
+        const rawCsvValues = csvData
+          .map(row => String(row[selectedHeader]).trim())
+          .filter(v => v.length > 0);
+        value = [...new Set(rawCsvValues)];
+        if (value.length === 0) return;
       }
     }
 
@@ -118,6 +128,7 @@ export const InputModal = ({ opened, onClose, alias, onSave }: InputModalProps) 
           <Tabs.List>
             {inputType === 'number' && <Tabs.Tab value="range">Range</Tabs.Tab>}
             {inputType === 'string' && <Tabs.Tab value="single">Single Value</Tabs.Tab>}
+            {inputType === 'string' && <Tabs.Tab value="list">List</Tabs.Tab>}
             <Tabs.Tab value="csv">CSV File</Tabs.Tab>
           </Tabs.List>
 
@@ -148,6 +159,28 @@ export const InputModal = ({ opened, onClose, alias, onSave }: InputModalProps) 
                 <Text size="xs" c="dimmed">
                   This value will be passed as-is to MathcadPy's set_string_input
                 </Text>
+              </Stack>
+            </Tabs.Panel>
+          )}
+
+          {inputType === 'string' && (
+            <Tabs.Panel value="list" pt="md">
+              <Stack>
+                <Textarea
+                  label="String Values (one per line)"
+                  placeholder={"Material A\nMaterial B\nMaterial C"}
+                  value={listValues}
+                  onChange={(e) => setListValues(e.currentTarget.value)}
+                  autosize
+                  minRows={3}
+                  maxRows={10}
+                  description="Enter one value per line. Empty lines and duplicates are removed automatically."
+                />
+                {listValues.trim().length > 0 && (
+                  <Text size="xs" c="dimmed">
+                    {[...new Set(listValues.split(/\r?\n/).map(v => v.trim()).filter(v => v.length > 0))].length} unique value(s)
+                  </Text>
+                )}
               </Stack>
             </Tabs.Panel>
           )}
