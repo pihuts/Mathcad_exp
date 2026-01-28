@@ -1,4 +1,4 @@
-import { AppShell, Title, Container, Button, Group, Stack, Progress, Text, Table, Badge, ActionIcon, Alert, Tabs, Paper, Checkbox } from '@mantine/core'
+import { AppShell, Title, Container, Button, Group, Stack, Progress, Text, Table, Badge, ActionIcon, Alert, Tabs, Paper, Checkbox, Tooltip } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { IconSettings, IconAlertCircle, IconFile, IconFolder } from '@tabler/icons-react'
 import { useState, useMemo } from 'react'
@@ -145,6 +145,7 @@ function App() {
     // Need to convert to: { "Input1": [1,2,3,4,5,6,7,8,9,10] }
     const newAliasConfigs: Record<string, any[]> = {};
     const newAliasUnits: Record<string, string> = {};
+    const newAliasTypes: Record<string, 'number' | 'string'> = {};
 
     config.inputs.forEach((inputConfig) => {
       // inputConfig.value is already an array like [1,2,3,4,5,6,7,8,9,10]
@@ -155,10 +156,16 @@ function App() {
       if (inputConfig.units) {
         newAliasUnits[inputConfig.alias] = inputConfig.units;
       }
+
+      // Detect type from value
+      const values = Array.isArray(inputConfig.value) ? inputConfig.value : [inputConfig.value];
+      const isString = values.length > 0 && typeof values[0] === 'string';
+      newAliasTypes[inputConfig.alias] = isString ? 'string' : 'number';
     });
 
     setAliasConfigs(newAliasConfigs);
     setAliasUnits(newAliasUnits);
+    setAliasTypes(newAliasTypes);
     setExportPdf(config.exportPdf);
     setExportMcdx(config.exportMcdx);
   };
@@ -216,6 +223,22 @@ function App() {
     if (keys.length === 0) return 0;
     return keys.reduce((acc, key) => acc * aliasConfigs[key].length, 1);
   }, [aliasConfigs]);
+
+  const iterationBreakdown = useMemo(() => {
+    const keys = Object.keys(aliasConfigs);
+    if (keys.length === 0) return null;
+
+    const parts = keys.map(key => {
+      const count = aliasConfigs[key].length;
+      const type = aliasTypes[key] || 'number';
+      return `${key} (${type}): ${count} value${count !== 1 ? 's' : ''}`;
+    });
+
+    const formula = keys.map(key => aliasConfigs[key].length).join(' \u00d7 ');
+    const total = keys.reduce((acc, key) => acc * aliasConfigs[key].length, 1);
+
+    return `${parts.join('\n')}\n\n${formula} = ${total} iterations`;
+  }, [aliasConfigs, aliasTypes]);
 
   const handleRun = () => {
     // Check if all aliases have configs or use default?
@@ -350,9 +373,17 @@ function App() {
                       </Table>
 
                       <Group justify="space-between" mt="md">
-                        <Text size="sm" fw={500}>
-                          Total Iterations: {iterationCount}
-                        </Text>
+                        {iterationBreakdown ? (
+                          <Tooltip label={iterationBreakdown} multiline withArrow position="bottom">
+                            <Text size="sm" fw={500} style={{ cursor: 'help', borderBottom: '1px dotted #868e96' }}>
+                              Total Iterations: {iterationCount}
+                            </Text>
+                          </Tooltip>
+                        ) : (
+                          <Text size="sm" fw={500}>
+                            Total Iterations: {iterationCount}
+                          </Text>
+                        )}
                         <Group gap="xl">
                           <Group gap="xs">
                             <Text size="sm" fw={500}>Export:</Text>
